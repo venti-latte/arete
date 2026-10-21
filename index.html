@@ -1,0 +1,1410 @@
+<title>Arete Youth Empowerment</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600;700&family=Prata&family=Space+Grotesk:wght@300;400;500;600;700&display=swap">
+<style>
+/*
+  ARETE — STYLE GUIDE
+  ------------------------------------------------------------------
+  Visual system: soft mist backgrounds, white surfaces, cobalt accents.
+  Typography: IBM Plex Sans for readable body descriptions; Space Grotesk for UI labels; Prata for the serif wordmark and display headings.
+  Motion: scroll reveals, word/letter entrances, parallax, tilt, counters,
+          timed banner phrases, and the interactive Framework particle canvas.
+
+  Body descriptions: change --font-body in :root and the Google Fonts link above.
+  UI labels: change --font-sans. Display font: change --font-display.
+
+  EDITING MAP
+  1. Design tokens and global styles       : :root and base rules below
+  2. Component styles                     : grouped CSS sections
+  3. Page content and data                : HTML markup + SITE_CONFIG / CONTENT
+  4. Interaction and animation behaviour  : JavaScript functions below
+
+  Keep the particle network exclusive to the Framework section. Prefer
+  editing the design tokens above individual component rules so changes
+  stay consistent across the page.
+*/
+:root{
+  --mist:#F0F5FA; --paper:#FFFFFF; --ink:#13233A; --ink-soft:#4A5B72;
+  --cobalt:#0B57C2; --cobalt-deep:#07409A; --sky:#D3E3F8; --line:#C9D8EA;
+  --aqua:#35C2B0; --violet:#9F85EA; --note:#7A5C00; --note-bg:#FFF7DC;
+  --font-display:"Prata","Bodoni MT",Didot,Georgia,serif;
+  --font-sans:"Space Grotesk","Inter",system-ui,-apple-system,"Segoe UI",sans-serif;
+  --font-body:"IBM Plex Sans","Noto Sans",Arial,sans-serif;
+  --shadow:0 14px 36px rgba(11,87,194,.12);
+  --ease:cubic-bezier(.2,.7,.2,1);
+  color-scheme:light;
+}
+*{box-sizing:border-box}
+button,input,textarea,select{font-family:var(--font-sans)}
+html{scroll-behavior:auto;scroll-padding-top:84px}
+body{margin:0;background:var(--mist);color:var(--ink);font-family:var(--font-sans);font-size:16px;font-weight:400;letter-spacing:-.018em;line-height:1.72;font-optical-sizing:auto;-webkit-font-smoothing:antialiased;text-rendering:optimizeLegibility;overflow-x:hidden}
+
+/* ---------- long-form/body descriptions ----------
+   Explicitly target description text instead of relying on inheritance.
+   UI labels can remain Space Grotesk and display headings/wordmarks use Prata.
+*/
+p:not(.kicker):not(.loader-wordmark):not(.quote):not(.e2),
+li,
+dd,
+blockquote,
+.lede,
+.s-lead,
+.band .body,
+.note,
+.found,
+.stat .what,
+.stat .more,
+.meter-cap,
+.net-chip .nl,
+.net-chip .nx,
+.prose,
+.emph .e3,
+.kvs .row,
+.sublist,
+.cap span,
+.gal-note,
+.refs .t,
+.refs .u,
+.refs .fl,
+footer p,
+.i-more,
+.qual,
+.desc,
+.description,
+.overview,
+.support,
+.body-copy,
+.card-copy {
+  font-family:var(--font-body)!important;
+  font-optical-sizing:auto;
+  letter-spacing:-.01em;
+}
+
+/* Reading rhythm for paragraph-like descriptions. */
+p, blockquote, .prose, .band .body, .refs .t {
+  line-height:1.78;
+}
+
+body::before{content:"";position:fixed;inset:0 0 auto;height:env(safe-area-inset-top,0px);z-index:70;background:var(--paper)}
+a{color:var(--cobalt)}
+h1,h2,h3,h4{margin:0;text-wrap:balance}
+p{margin:0}
+.wrap{max-width:1100px;margin-inline:auto;padding-left:max(20px,env(safe-area-inset-left,0px));padding-right:max(20px,env(safe-area-inset-right,0px))}
+:focus-visible{outline:3px solid var(--cobalt);outline-offset:3px;border-radius:6px}
+.ico{width:1.35em;height:1.35em;fill:none;stroke:currentColor;stroke-width:1.6;stroke-linecap:round;stroke-linejoin:round;flex:none;vertical-align:-.25em}
+.sprite{position:absolute;width:0;height:0;overflow:hidden}
+
+/* ---------- header ---------- */
+.site-head{position:sticky;top:env(safe-area-inset-top,0px);z-index:60;background:rgba(255,255,255,.9);backdrop-filter:blur(12px);border-bottom:1px solid var(--line);transition:box-shadow .3s}
+.site-head.scrolled{box-shadow:0 8px 24px rgba(11,87,194,.08)}
+.site-head .wrap{display:flex;align-items:center;gap:20px;padding-block:10px;transition:padding .3s}
+.site-head.scrolled .wrap{padding-block:6px}
+.prog{position:absolute;left:0;bottom:-1px;height:3px;width:calc(var(--p,0) * 100%);background:linear-gradient(90deg,var(--aqua),var(--cobalt),var(--violet))}
+.brand{font-family:var(--font-display);font-size:24px;color:var(--cobalt);text-decoration:none;white-space:nowrap;display:flex;align-items:center;gap:10px;font-weight:400}
+/* Prata's cap shapes can sit visually high against the sans-serif UI. Lower only the serif wordforms by a small optical amount; layout boxes and sans subtitles remain fixed. */
+.brand-name{display:inline-block;position:relative;top:clamp(1px,.045em,4px)}
+.s-title-text{display:inline-block;position:relative;top:clamp(1px,.045em,4px)}
+.kicker,.h3,.fig,.quote,.emph .e2,.profile h3,.net-chip .nb,.loader-wordmark,.i-top .name,.i-fig,.cap b,.refs .n{position:relative;top:clamp(1px,.045em,4px)}
+.transform span{position:relative;top:clamp(1px,.045em,4px)}
+.logo{width:36px;height:36px;border-radius:10px;border:1.5px dashed var(--cobalt);display:grid;place-items:center;font:700 9px var(--font-sans);letter-spacing:.08em;color:var(--cobalt);background:var(--mist);overflow:hidden;flex:none}
+.logo img{height:100%;width:auto;max-width:90px;display:block}
+.logo.has{border:0;background:none;width:auto;border-radius:0}
+.nav{display:flex;gap:2px;overflow-x:auto;flex:1;min-width:0;scrollbar-width:none;justify-content:flex-end}
+.nav a{position:relative;font-size:13px;font-weight:600;text-decoration:none;color:var(--ink);padding:6px 12px;white-space:nowrap}
+.nav a::after{content:"";position:absolute;left:12px;right:12px;bottom:2px;height:2px;border-radius:2px;background:var(--cobalt);transform:scaleX(0);transform-origin:right;transition:transform .35s var(--ease)}
+.nav a:hover::after,.nav a.on::after{transform:scaleX(1);transform-origin:left}
+.nav a.on{color:var(--cobalt)}
+
+/* ---------- cursor aura + side dots ---------- */
+.aura{position:fixed;left:0;top:0;width:380px;height:380px;margin:-190px 0 0 -190px;border-radius:50%;pointer-events:none;z-index:45;background:radial-gradient(circle,rgba(53,194,176,.22),rgba(159,133,234,.14) 45%,transparent 70%);filter:blur(10px);opacity:0;transition:opacity .4s;mix-blend-mode:multiply}
+.aura.on{opacity:1}
+.sdots{position:fixed;right:max(10px,env(safe-area-inset-right,0px));top:50%;transform:translateY(-50%);z-index:55;display:grid;gap:4px;padding:10px 8px;border-radius:999px;background:rgba(255,255,255,.82);backdrop-filter:blur(10px);box-shadow:0 8px 26px rgba(11,87,194,.14);border:1px solid var(--line)}
+.sdots a{position:relative;display:grid;place-items:center;width:22px;height:22px;text-decoration:none}
+.sdots a i{width:8px;height:8px;border-radius:50%;background:var(--sky);border:1.5px solid var(--cobalt);transition:transform .35s var(--ease),background .3s}
+.sdots a b{position:absolute;right:30px;top:50%;transform:translate(14px,-50%);opacity:0;pointer-events:none;white-space:nowrap;background:var(--cobalt-deep);color:#fff;font:600 12px var(--font-sans);padding:5px 12px;border-radius:999px;transition:opacity .25s,transform .35s var(--ease)}
+.sdots a:hover i,.sdots a:focus-visible i{transform:scale(1.6);background:var(--aqua)}
+.sdots a:hover b,.sdots a:focus-visible b{opacity:1;transform:translate(0,-50%)}
+.sdots a.on i{background:var(--cobalt);transform:scale(1.35);box-shadow:0 0 0 0 rgba(11,87,194,.5);animation:ping 2s infinite}
+@keyframes ping{0%{box-shadow:0 0 0 0 rgba(11,87,194,.45)}70%,100%{box-shadow:0 0 0 9px rgba(11,87,194,0)}}
+
+/* ---------- buttons ---------- */
+.pill{display:inline-flex;align-items:center;gap:14px;background:var(--cobalt-deep);color:#fff;border:1.5px solid var(--cobalt-deep);border-radius:999px;padding:11px 12px 11px 26px;font:700 14px var(--font-sans);letter-spacing:.02em;text-decoration:none;cursor:pointer;transform:translate(var(--tx,0px),var(--ty,0px));transition:transform .25s var(--ease),box-shadow .25s,background .3s}
+.pill .ar{width:30px;height:30px;border-radius:50%;background:#fff;color:var(--cobalt-deep);display:grid;place-items:center;transition:transform .35s var(--ease)}
+.pill .ar .ico{width:15px;height:15px;vertical-align:0}
+.pill:hover{box-shadow:var(--shadow)}
+.pill:hover .ar{transform:translateX(4px)}
+.pill.ghost{background:transparent;color:var(--cobalt-deep)}
+.pill.ghost .ar{background:var(--cobalt-deep);color:#fff}
+.mini{display:inline-flex;align-items:center;gap:6px;font:600 12.5px var(--font-sans);border:1px solid var(--line);background:var(--paper);color:var(--ink);border-radius:999px;padding:5px 12px;cursor:pointer;transition:border-color .2s,color .2s,transform .2s}
+.mini .ico{width:14px;height:14px}
+.mini:hover{border-color:var(--cobalt);color:var(--cobalt);transform:translateY(-1px)}
+
+/* ---------- hero ---------- */
+.hero{position:relative;background:var(--paper);overflow:hidden;padding-block:60px 56px}
+.shape{position:absolute;pointer-events:none;border:1px solid var(--line);will-change:transform}
+.sh1{width:240px;height:240px;left:-70px;top:-40px;border-radius:0 100% 0 0}
+.sh2{width:320px;height:320px;right:-90px;bottom:-120px;border-radius:50%}
+.sh3{width:120px;height:120px;left:44%;top:12%;border-radius:100% 0 0 0;background:linear-gradient(135deg,rgba(211,227,248,.5),transparent)}
+.sh4{width:70px;height:70px;left:6%;bottom:14%;border-radius:8px}
+.hero .wrap{display:grid;grid-template-columns:1.05fr 1fr;gap:40px;align-items:center;position:relative;z-index:1}
+.kicker{font-family:var(--font-display);font-size:clamp(58px,9vw,104px);color:var(--cobalt);line-height:1;margin-bottom:14px;font-weight:400}
+.hero h1{font-size:clamp(22px,3vw,32px);font-weight:700;line-height:1.35;margin-bottom:16px;letter-spacing:-.01em}
+.lede{color:var(--ink-soft);max-width:34em;margin-bottom:26px}
+.hero-cta{display:flex;flex-wrap:wrap;gap:12px}
+.hero-frame{position:relative;width:min(100%,480px);aspect-ratio:1;margin-inline:auto}
+.halo{position:absolute;inset:-4%;border-radius:50%;background:conic-gradient(from 90deg,rgba(11,87,194,0),rgba(111,168,255,.55),rgba(11,87,194,0) 55%);animation:spin 14s linear infinite;-webkit-mask-image:radial-gradient(circle,transparent 62%,#000 63%,#000 70%,transparent 71%);mask-image:radial-gradient(circle,transparent 62%,#000 63%,#000 70%,transparent 71%)}
+.halo2{position:absolute;inset:6% -6% -6% 10%;border-radius:50%;background:radial-gradient(circle,rgba(211,227,248,.85),rgba(211,227,248,0) 68%);animation:float 9s ease-in-out infinite}
+.hero-circle{position:absolute;inset:4%;border-radius:50%;overflow:hidden;background:var(--mist);box-shadow:0 0 0 10px rgba(211,227,248,.55),var(--shadow);animation:grow 1.4s var(--ease) both,float 8s ease-in-out 1.4s infinite}
+.hero-circle img{width:100%;height:100%;object-fit:cover;border-radius:50%;display:block}
+.hero-circle .ph{position:absolute;inset:0;display:grid;place-items:center;align-content:center;gap:8px;text-align:center;padding:36px;color:var(--ink-soft);font-size:13px;line-height:1.5;background:linear-gradient(120deg,#E6F0FC,#EAF7F4,#F0EBFD,#E6F0FC);background-size:300% 300%;animation:aurora 10s ease infinite}
+.hero-circle .ph .ico{width:38px;height:38px;color:var(--cobalt)}
+.hero-circle .ph b{color:var(--ink);font-size:15px}
+.hero-circle .ph code,.slide .ph code{font:600 12px ui-monospace,Menlo,monospace;background:var(--paper);border-radius:6px;padding:2px 8px;color:var(--cobalt-deep)}
+@keyframes spin{to{transform:rotate(360deg)}}
+@keyframes float{0%,100%{transform:translateY(0)}50%{transform:translateY(-12px)}}
+@keyframes grow{from{clip-path:circle(0% at 50% 50%);opacity:.4}to{clip-path:circle(75% at 50% 50%);opacity:1}}
+@keyframes aurora{0%,100%{background-position:0% 50%}50%{background-position:100% 50%}}
+
+.marquee{position:relative;display:flex;align-items:center;justify-content:center;overflow:hidden;min-height:66px;background:linear-gradient(110deg,#073A8C,var(--cobalt-deep) 48%,#073A8C);color:#fff;padding:12px 0;isolation:isolate}
+.marquee::before{content:"";position:absolute;inset:0;z-index:-1;pointer-events:none;background:linear-gradient(100deg,transparent 18%,rgba(255,255,255,.055) 50%,transparent 82%);transform:translateX(-100%);animation:bannerSweep 8s ease-in-out infinite}
+.mq{position:relative;display:flex;align-items:center;justify-content:center;width:100%;min-height:42px;will-change:auto}
+.mq span{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;gap:14px;padding-inline:24px;text-align:center;font-family:var(--font-display);font-size:clamp(18px,2.1vw,23px);letter-spacing:.015em;opacity:0;transform:translateY(10px);transition:opacity .48s var(--ease),transform .58s var(--ease);pointer-events:none}
+.mq span.active{opacity:1;transform:translateY(0)}
+.mq span.exit{opacity:0;transform:translateY(-10px)}
+.mq .ico{width:18px;height:18px;color:var(--aqua)}
+@keyframes bannerSweep{0%,20%{transform:translateX(-100%)}65%,100%{transform:translateX(100%)}}
+
+/* ---------- sections ---------- */
+section.s{padding-block:96px;position:relative}
+.white{background:var(--paper)}
+.s-head{display:grid;grid-template-columns:minmax(0,270px) minmax(0,1fr);gap:24px 48px;margin-bottom:44px;align-items:start}
+.s-title{font-family:var(--font-display);font-weight:400;font-size:clamp(36px,5vw,52px);color:var(--cobalt);line-height:1.02;position:relative;padding-bottom:18px}
+.s-title::after{content:"";position:absolute;left:0;bottom:0;height:3px;width:64px;border-radius:3px;background:linear-gradient(90deg,var(--cobalt),var(--aqua));transform:scaleX(0);transform-origin:left;transition:transform 1s var(--ease) .5s}
+.s-title.in::after{transform:scaleX(1)}
+.band .s-title::after{background:#fff}
+.s-sub{display:block;font:600 12px var(--font-sans);letter-spacing:.1em;text-transform:uppercase;color:var(--ink-soft);margin-top:12px}
+.s-lead{font-weight:700;font-size:19px;line-height:1.6;letter-spacing:-.005em}
+.s-lead + p{color:var(--ink-soft);margin-top:12px;font-size:15px}
+.h3{font-family:var(--font-display);font-weight:400;font-size:30px;color:var(--cobalt);line-height:1.15;margin-bottom:16px}
+.sub{margin-top:64px}
+.note{border:1.5px dashed var(--note);background:var(--note-bg);color:var(--note);border-radius:10px;padding:12px 16px;font-size:13.5px;line-height:1.65;display:flex;gap:10px}
+.note .ico{margin-top:2px}
+.found{border:1.5px solid var(--sky);background:var(--mist);border-radius:10px;padding:12px 16px;font-size:13.5px;line-height:1.65;color:var(--ink-soft);display:flex;gap:10px}
+.found .ico{margin-top:2px;color:var(--cobalt)}
+.found b{color:var(--ink)}
+
+.card{background:var(--paper);border:1.5px solid var(--sky);border-radius:12px;padding:20px 22px;min-width:0}
+.card h3,.card h4{font-size:16px;font-weight:700;display:flex;align-items:center;gap:10px;margin:0 0 8px}
+.card h3 .ico,.card h4 .ico{color:var(--cobalt);width:22px;height:22px}
+.card p{font-size:14.5px;color:var(--ink-soft);line-height:1.75}
+.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(290px,1fr));gap:18px}
+
+.tilt{position:relative}
+.tilt::before{content:"";position:absolute;inset:0;border-radius:inherit;background:radial-gradient(260px circle at var(--mx,50%) var(--my,0%),rgba(53,194,176,.14),transparent 62%);opacity:0;transition:opacity .35s;pointer-events:none;z-index:0}
+.tilt:hover::before{opacity:1}
+.tilt:hover{box-shadow:var(--shadow);border-color:var(--cobalt)}
+.band .tilt:hover{border-color:rgba(255,255,255,.7);box-shadow:0 14px 40px rgba(0,0,0,.18)}
+
+/* ---------- stats ---------- */
+.stats{display:grid;grid-template-columns:repeat(auto-fit,minmax(300px,1fr));gap:18px}
+.stat{position:relative;background:var(--paper);border:1.5px solid var(--sky);border-radius:14px;padding:24px;display:grid;gap:10px;align-content:start;min-width:0;overflow:hidden;transition:transform .65s var(--ease),box-shadow .35s,border-color .35s}
+.mist-card{background:var(--mist)}
+.advocacy-stats{margin-top:10px}
+.advocacy-stats .stat{padding:22px}
+.advocacy-stats .fig{font-size:clamp(44px,5.8vw,66px);overflow-wrap:anywhere}
+.advocacy-stats .stat .more{font-size:13.5px}
+.advocacy-stats .src{margin-top:4px}
+.stat:hover{transform:translateY(-5px);border-color:var(--cobalt);box-shadow:var(--shadow)}
+.stat .tag{display:flex;align-items:center;gap:8px;font-size:12px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:var(--ink-soft)}
+.stat .tag .ico{color:var(--cobalt);width:20px;height:20px}
+.fig{font-family:var(--font-display);font-size:clamp(54px,7vw,72px);line-height:1;color:var(--cobalt);letter-spacing:-.01em}
+.fig small{font-size:.38em;margin-left:6px}
+.stat .what{font-weight:700;line-height:1.5}
+.stat .more{font-size:14px;color:var(--ink-soft)}
+.meter{height:9px;border-radius:999px;background:var(--sky);overflow:hidden;position:relative}
+.meter i{display:block;height:100%;background:linear-gradient(90deg,var(--aqua),var(--cobalt),var(--aqua));background-size:200% 100%;border-radius:999px;transform-origin:left;transition:transform 1.5s var(--ease);animation:barflow 3s linear infinite}
+@keyframes barflow{to{background-position:-200% 0}}
+.js .meter i{transform:scaleX(0)}
+.js .stat.in .meter i{transform:scaleX(1)}
+.meter-cap{font-size:12px;color:var(--ink-soft)}
+.src{font-size:13px;font-weight:600;display:flex;gap:6px;align-items:center;position:relative;z-index:1}
+.src .ico{width:16px;height:16px}
+.skel .stat>*{visibility:hidden}
+.skel .stat::after,.sk::after{content:"";position:absolute;inset:0;z-index:3;pointer-events:none;background:linear-gradient(100deg,transparent 20%,rgba(211,227,248,.9) 50%,transparent 80%),var(--mist);background-size:200% 100%;animation:shimmer 1.2s linear infinite}
+@keyframes shimmer{from{background-position:200% 0}to{background-position:-200% 0}}
+.srcs{display:flex;flex-wrap:wrap;gap:10px;margin-top:30px}
+.srcs a{display:inline-flex;gap:8px;align-items:center;text-decoration:none;font-size:13.5px;font-weight:600;background:var(--paper);border:1.5px solid var(--sky);border-radius:999px;padding:8px 16px;color:var(--ink);transition:border-color .2s,transform .3s var(--ease)}
+.srcs a:hover{border-color:var(--cobalt);transform:translateY(-3px)}
+.srcs .ico{width:16px;height:16px;color:var(--cobalt)}
+.qual{font-size:13.5px;color:var(--ink-soft);margin-top:16px;max-width:60em}
+
+/* ---------- particle network ---------- */
+.net{position:relative}
+.net-stage{position:relative;height:clamp(440px,56vw,620px);border-radius:24px;background:radial-gradient(ellipse at center,rgba(255,255,255,.9),rgba(240,245,250,0) 72%);touch-action:pan-y}
+.net-glow{position:absolute;inset:18% 26%;-webkit-mask-image:radial-gradient(circle,#000 30%,transparent 70%);mask-image:radial-gradient(circle,#000 30%,transparent 70%)}
+.net-glow i{position:absolute;border-radius:50%;filter:blur(40px);animation:drift 16s ease-in-out infinite alternate}
+.net-glow i:nth-child(1){inset:0 30% 30% 0;background:radial-gradient(circle,#79E0D2,rgba(121,224,210,0) 70%)}
+.net-glow i:nth-child(2){inset:30% 0 0 30%;background:radial-gradient(circle,#B79CF2,rgba(183,156,242,0) 70%);animation-delay:-5s}
+.net-glow i:nth-child(3){inset:15%;background:radial-gradient(circle,#9CC8FF,rgba(156,200,255,0) 70%);animation-delay:-9s}
+@keyframes drift{from{transform:translate(-4%,-3%) scale(1)}to{transform:translate(5%,4%) scale(1.1)}}
+.net canvas{position:absolute;inset:0;width:100%;height:100%;display:block;cursor:crosshair}
+.net-core{position:absolute;inset:0;padding-bottom:52px;display:grid;place-items:center;pointer-events:none;text-align:center;font-weight:800;font-size:clamp(15px,2vw,22px);line-height:1.3;color:var(--cobalt-deep);text-shadow:0 0 22px rgba(255,255,255,.95),0 0 8px rgba(255,255,255,.9);animation:breathe 5s ease-in-out infinite}
+@keyframes breathe{0%,100%{transform:scale(1)}50%{transform:scale(1.05)}}
+.net-chips{position:absolute;inset:0;pointer-events:none}
+.net-chip{position:absolute;left:0;top:0;pointer-events:auto;width:max-content;max-width:210px;background:var(--paper);border-radius:16px;padding:10px 14px;text-align:center;box-shadow:0 10px 28px rgba(11,87,194,.14);border:1.5px solid transparent;text-decoration:none;color:var(--ink);cursor:pointer;transition:border-color .25s,box-shadow .3s,background .3s;will-change:transform}
+.net-chip .nb{display:block;font-family:var(--font-display);font-weight:400;font-size:26px;color:var(--cobalt);line-height:1.1}
+.net-chip .nl{display:block;font-size:12.5px;color:var(--ink-soft);line-height:1.4}
+.net-chip .nx{display:block;max-height:0;opacity:0;overflow:hidden;font-size:11.5px;color:var(--cobalt-deep);font-weight:600;line-height:1.4;transition:max-height .4s var(--ease),opacity .3s,margin .3s}
+.net-chip:hover,.net-chip:focus-visible,.net-chip.act{border-color:var(--cobalt);box-shadow:0 16px 40px rgba(11,87,194,.24)}
+.net-chip:hover .nx,.net-chip:focus-visible .nx,.net-chip.act .nx{max-height:60px;opacity:1;margin-top:6px}
+.net-chip .ni{display:block;margin:0 auto 4px;color:var(--cobalt);width:24px;height:24px}
+.net.compact .net-stage{height:320px}
+.net.compact .net-core{display:none}
+.net.compact .net-chips{position:static;display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px;margin-top:14px}
+.net.compact .net-chip{position:static;max-width:none;width:auto;transform:none!important}
+.net.compact .net-chip .nx{max-height:none;opacity:1;margin-top:6px}
+.fw-net .net-stage{height:clamp(380px,46vw,470px)}
+.diagram{display:block}
+.fw-net{width:100%;max-width:1020px;margin-inline:auto}
+.fw-net .net-stage{height:clamp(430px,50vw,560px)}
+
+/* ---------- band ---------- */
+.band{background:linear-gradient(180deg,#1A6FD8,#0752B8);color:#fff;overflow:hidden}
+.band .shape{border-color:rgba(255,255,255,.25)}
+.band .s-title,.band .s-sub,.band .s-lead{color:#fff}
+.band .s-sub{opacity:.85}
+.band .body{display:grid;gap:14px;max-width:44em;font-size:15.5px;line-height:1.85}
+.tiles{display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:16px;margin-top:40px}
+.tile{background:rgba(255,255,255,.1);border:1px solid rgba(255,255,255,.28);border-radius:10px;padding:26px 22px 24px;display:flex;flex-direction:column;gap:10px;min-width:0;backdrop-filter:blur(4px)}
+.tile .ic{width:48px;height:48px;border:1.5px solid rgba(255,255,255,.7);border-radius:8px;display:grid;place-items:center;margin-bottom:22px;margin-left:auto;position:relative;z-index:1}
+.tile .ic .ico{width:24px;height:24px}
+.tile h3{font-size:17px;font-weight:700;color:#fff;position:relative;z-index:1}
+.tile p{font-size:14.5px;line-height:1.8;color:#fff;position:relative;z-index:1}
+.transform{margin-top:28px;display:flex;flex-wrap:wrap;gap:10px 14px;align-items:center;background:rgba(255,255,255,.12);border:1px solid rgba(255,255,255,.28);border-radius:12px;padding:18px 24px;font-family:var(--font-display);font-size:clamp(19px,2.6vw,27px)}
+.transform .ico{animation:nudge 1.6s ease-in-out infinite}
+@keyframes nudge{0%,100%{transform:translateX(0)}50%{transform:translateX(8px)}}
+
+/* ---------- personal ---------- */
+.quote{font-family:var(--font-display);font-size:clamp(26px,3.8vw,40px);color:var(--cobalt);line-height:1.22;margin-bottom:18px;max-width:20em}
+.prose{display:grid;gap:16px;max-width:46em;color:var(--ink);font-size:16px}
+.emph{margin-top:30px;background:var(--paper);border:1.5px solid var(--sky);border-radius:14px;padding:26px 28px;display:grid;gap:8px}
+.emph .e1{font-size:13px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:var(--ink-soft)}
+.emph .e2{font-family:var(--font-display);font-size:clamp(24px,3.2vw,34px);color:var(--cobalt);line-height:1.2}
+.emph .e3{color:var(--ink-soft)}
+.profile{background:var(--paper);border:1.5px solid var(--sky);border-radius:14px;padding:26px;display:grid;gap:10px;align-content:start;min-width:0}
+.profile .pi{width:46px;height:46px;border-radius:50%;background:var(--mist);color:var(--cobalt);display:grid;place-items:center;transition:transform .5s var(--ease),background .3s}
+.profile:hover .pi{transform:rotate(-8deg) scale(1.1);background:var(--sky)}
+.profile .pi .ico{width:24px;height:24px}
+.profile h3{font-family:var(--font-display);font-weight:400;font-size:28px;color:var(--cobalt);line-height:1.15}
+.cat{font-size:12px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:var(--ink-soft)}
+.profile p{font-size:14.5px;color:var(--ink-soft)}
+.plist{list-style:none;margin:4px 0 0;padding:0;display:flex;flex-wrap:wrap;gap:8px}
+.plist li{font-size:13px;font-weight:600;background:var(--mist);border-radius:999px;padding:5px 14px;color:var(--ink);transition:background .25s,transform .3s var(--ease)}
+.plist li:hover{background:var(--sky);transform:translateY(-2px)}
+.cls{display:inline-block;font-size:12px;font-weight:600;color:var(--cobalt-deep);background:var(--sky);border-radius:999px;padding:3px 12px;width:fit-content}
+.kvs{display:grid;gap:10px;margin-top:6px}
+.kvs .row{display:grid;grid-template-columns:auto 1fr auto;gap:10px;align-items:start;font-size:14px;padding-top:10px;border-top:1px solid var(--sky)}
+.kvs .row .k{display:flex;gap:8px;align-items:center;font-weight:700;min-width:130px}
+.kvs .row .k .ico{width:18px;height:18px;color:var(--cobalt)}
+.kvs .row .v{min-width:0;word-break:break-word;color:var(--ink)}
+.sub-h{font-size:12px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:var(--ink-soft);margin-top:4px}
+.sublist{margin:0;padding:0;list-style:none;display:grid;gap:8px}
+.sublist li{font-size:14px;color:var(--ink-soft)}
+.sublist b{color:var(--ink)}
+.cats{display:flex;flex-wrap:wrap;gap:10px;margin:18px 0 0}
+.cats span{font-size:13.5px;background:var(--paper);border:1.5px solid var(--sky);border-radius:999px;padding:7px 16px;transition:transform .3s var(--ease),border-color .2s}
+.cats span:hover{transform:translateY(-3px);border-color:var(--cobalt)}
+.cats b{font-weight:700}
+
+/* ---------- gallery carousel ---------- */
+.car{position:relative;outline:none}
+.car-view{overflow:hidden;border-radius:20px;box-shadow:var(--shadow);background:var(--mist);touch-action:pan-y}
+.car-track{display:flex;transition:transform .9s var(--ease);will-change:transform}
+.slide{flex:0 0 100%;min-width:0;position:relative;aspect-ratio:16/9;max-height:78vh}
+.slide .media{position:absolute;inset:0;overflow:hidden;background:var(--mist)}
+.slide img,.slide video{width:100%;height:100%;object-fit:cover;display:block}
+.slide .ph{position:absolute;inset:0;display:grid;place-items:center;align-content:center;gap:10px;text-align:center;padding:30px;color:var(--ink-soft);font-size:14px;background:linear-gradient(120deg,#E6F0FC,#EAF7F4,#F0EBFD,#E6F0FC);background-size:300% 300%;animation:aurora 12s ease infinite}
+.slide .ph .ico{width:46px;height:46px;color:var(--cobalt)}
+.cap{position:absolute;left:22px;bottom:22px;right:22px;max-width:520px;background:rgba(255,255,255,.92);backdrop-filter:blur(10px);border-radius:14px;padding:16px 20px;box-shadow:0 10px 30px rgba(11,87,194,.16);transform:translateY(20px);opacity:0;transition:transform .8s var(--ease) .35s,opacity .6s .35s}
+.slide.act .cap{transform:none;opacity:1}
+.cap b{display:block;font-family:var(--font-display);font-weight:400;font-size:24px;color:var(--cobalt);line-height:1.2}
+.cap span{font-size:14px;color:var(--ink-soft)}
+.car-ctl{display:flex;align-items:center;justify-content:center;gap:18px;margin-top:20px}
+.car-btn{width:46px;height:46px;border-radius:50%;border:1.5px solid var(--sky);background:var(--paper);color:var(--cobalt);display:grid;place-items:center;cursor:pointer;transition:background .25s,color .25s,transform .3s var(--ease),border-color .25s}
+.car-btn:hover{background:var(--cobalt);color:#fff;border-color:var(--cobalt);transform:scale(1.08)}
+.car-btn .ico{width:18px;height:18px;vertical-align:0}
+.car-dots{display:flex;gap:8px;align-items:center}
+.car-dots button{width:10px;height:10px;border-radius:99px;border:0;background:var(--sky);cursor:pointer;padding:0;transition:width .4s var(--ease),background .3s}
+.car-dots button[aria-current="true"]{width:36px;background:var(--cobalt)}
+.car-count{font:700 13px var(--font-sans);letter-spacing:.1em;color:var(--ink-soft);min-width:56px;text-align:center}
+.gal-note{font-size:13.5px;color:var(--ink-soft);text-align:center;max-width:50em;margin:26px auto 0}
+
+/* ---------- references ---------- */
+.refs{list-style:none;margin:0;padding:0;display:grid;gap:12px}
+.refs li{background:var(--paper);border:1.5px solid var(--sky);border-radius:12px;padding:16px 18px;display:grid;grid-template-columns:auto 1fr;gap:6px 16px;min-width:0;scroll-margin-top:90px;transition:border-color .3s,box-shadow .4s}
+.refs li.flash{border-color:var(--cobalt);box-shadow:0 0 0 6px rgba(11,87,194,.14)}
+.refs .n{font-family:var(--font-display);font-size:28px;color:var(--cobalt);line-height:1;grid-row:1/4}
+.refs .t{font-size:14.5px;line-height:1.65}
+.refs .u{font-size:13px;word-break:break-all}
+.refs .fl{font-size:12.5px;color:var(--note);display:flex;gap:6px;align-items:flex-start}
+.refs .fl .ico{width:16px;height:16px;margin-top:2px}
+.refgroup{font-size:12px;font-weight:700;letter-spacing:.12em;text-transform:uppercase;color:var(--ink-soft);margin:30px 0 12px}
+.vnote{margin-top:30px}
+footer{background:var(--paper);border-top:1px solid var(--line);padding-block:52px}
+footer .wrap{display:grid;gap:18px}
+footer p{font-size:13.5px;color:var(--ink-soft);max-width:62em}
+footer nav{display:flex;flex-wrap:wrap;gap:6px 20px}
+footer nav a{font-size:14px;font-weight:600}
+
+/* ---------- animated startup ---------- */
+.page-loader{position:fixed;inset:0;z-index:120;display:grid;place-content:center;justify-items:center;gap:12px;overflow:hidden;background:radial-gradient(ellipse at 50% 44%,rgba(211,227,248,.78),transparent 38%),var(--mist);color:var(--ink);opacity:1;visibility:visible;transition:opacity .58s var(--ease),visibility .58s;isolation:isolate}
+.page-loader::before{content:"";position:absolute;inset:-20%;z-index:0;pointer-events:none;background-image:linear-gradient(rgba(11,87,194,.045) 1px,transparent 1px),linear-gradient(90deg,rgba(11,87,194,.045) 1px,transparent 1px);background-size:42px 42px;mask-image:radial-gradient(ellipse at center,#000 0%,transparent 70%);animation:loaderGridDrift 18s linear infinite}
+.page-loader::after{content:"";position:absolute;z-index:0;left:50%;top:43%;width:min(68vw,530px);aspect-ratio:1;border:1px solid rgba(11,87,194,.12);border-radius:50%;transform:translate(-50%,-50%);box-shadow:0 0 0 28px rgba(11,87,194,.025),0 0 0 68px rgba(53,194,176,.025);animation:loaderHalo 3.2s ease-in-out infinite}
+.page-loader>*{position:relative;z-index:1}
+.page-loader.out{opacity:0;visibility:hidden;pointer-events:none}
+.loader-orbit{width:88px;height:88px;display:grid;place-items:center;position:relative;border:1px solid rgba(11,87,194,.22);border-radius:50%;animation:orbitBreathe 1.7s ease-in-out infinite;box-shadow:0 0 36px rgba(11,87,194,.09),inset 0 0 22px rgba(11,87,194,.045)}
+.loader-orbit::before,.loader-orbit::after{content:"";position:absolute;inset:5px;border:2px solid transparent;border-top-color:var(--cobalt);border-right-color:var(--aqua);border-radius:50%;animation:spin 1.1s linear infinite}
+.loader-orbit::after{inset:-8px;border-top-color:var(--violet);border-right-color:transparent;animation-duration:1.8s;animation-direction:reverse}
+.loader-orbit span{font:400 34px var(--font-display);color:var(--cobalt);animation:loaderPulse 1.1s ease-in-out infinite}
+.loader-satellite{position:absolute;width:8px;height:8px;border:2px solid var(--paper);border-radius:50%;background:var(--aqua);box-shadow:0 0 0 4px rgba(53,194,176,.12)}
+.loader-satellite.s1{left:-2px;top:28%;animation:satelliteDrift 2.8s ease-in-out infinite}
+.loader-satellite.s2{right:4px;bottom:17%;background:var(--violet);animation:satelliteDrift 2.8s ease-in-out -1.4s infinite}
+.loader-wordmark{font:400 44px/.95 var(--font-display);letter-spacing:.035em;color:var(--cobalt);animation:loaderRise .8s var(--ease) both}
+.loader-kicker{font-size:9px;letter-spacing:.22em;text-transform:uppercase;font-weight:800;color:var(--cobalt-deep);opacity:.72;animation:loaderRise .8s var(--ease) .08s both}
+.loader-status{display:flex;align-items:center;gap:3px;min-height:20px;color:var(--ink-soft);font-size:11px;letter-spacing:.065em;text-align:center;animation:loaderRise .8s var(--ease) .12s both;transition:opacity .18s,transform .18s}
+.loader-status.swap{opacity:0;transform:translateY(4px)}
+.loader-fact{width:min(86vw,350px);margin:10px 0 2px;text-align:center;font-size:clamp(12px,1vw,14px);line-height:1.6;color:var(--ink-soft);letter-spacing:0;animation:loaderRise .8s var(--ease) .2s both}
+.loader-fact strong{font-family:var(--font-display);font-size:18px;font-weight:400;color:var(--ink);white-space:nowrap}
+.loader-fact span{display:block;margin-top:3px;font-size:10px;letter-spacing:.03em;color:var(--ink-soft)}
+.stats-note{max-width:88ch;margin:0 0 24px;padding:14px 17px;border-left:2px solid var(--line);font-size:14px;line-height:1.7;color:var(--ink-soft)}
+.stats-note strong{color:var(--ink);font-weight:700}
+.loader-dots{display:inline-flex;gap:3px;margin-left:4px}
+.loader-dots i{width:4px;height:4px;border-radius:50%;background:var(--cobalt);animation:dotHop .8s ease-in-out infinite}
+.loader-dots i:nth-child(2){animation-delay:.12s}.loader-dots i:nth-child(3){animation-delay:.24s}
+.loader-stages{display:flex;align-items:center;justify-content:center;gap:10px;margin-top:3px;color:#7b8aa0;font-size:8px;font-weight:800;letter-spacing:.15em}
+.loader-stages span{transition:color .28s,opacity .28s;opacity:.62}
+.loader-stages span.active{color:var(--cobalt);opacity:1}
+.loader-stages i{width:22px;height:1px;background:var(--line);position:relative;overflow:hidden}
+.loader-stages i::after{content:"";position:absolute;inset:0;background:var(--aqua);transform:translateX(-100%);transition:transform .35s var(--ease)}
+.loader-stages i.done::after{transform:translateX(0)}
+.loader-track{width:min(240px,60vw);height:3px;border-radius:99px;background:rgba(201,216,234,.8);overflow:hidden;margin-top:2px;box-shadow:0 0 0 1px rgba(255,255,255,.7)}
+.loader-track span{display:block;width:100%;height:100%;background:linear-gradient(90deg,var(--aqua),var(--cobalt),var(--violet),var(--aqua));background-size:200% 100%;transform:scaleX(0);transform-origin:left;animation:loadTrack 1.55s cubic-bezier(.6,0,.3,1) .08s forwards,barflow 2s linear infinite}
+@keyframes orbitBreathe{0%,100%{transform:scale(.96) rotate(-4deg)}50%{transform:scale(1.045) rotate(4deg)}}
+@keyframes loaderPulse{0%,100%{transform:scale(1);opacity:.85}50%{transform:scale(1.12);opacity:1}}
+@keyframes loaderRise{from{opacity:0;transform:translateY(12px);filter:blur(5px)}to{opacity:1;transform:translateY(0);filter:blur(0)}}
+@keyframes satelliteDrift{0%,100%{transform:translate(0,0)}50%{transform:translate(7px,-5px)}}
+@keyframes loaderGridDrift{to{background-position:42px 42px,42px 42px}}
+@keyframes loaderHalo{0%,100%{opacity:.58;transform:translate(-50%,-50%) scale(.96)}50%{opacity:1;transform:translate(-50%,-50%) scale(1.035)}}
+@keyframes dotHop{0%,60%,100%{transform:translateY(0);opacity:.45}30%{transform:translateY(-4px);opacity:1}}
+@keyframes loadTrack{to{transform:scaleX(1)}}
+
+/* ---------- intro ---------- */
+.intro{position:fixed;inset:0;z-index:100;background:var(--mist);color:var(--ink);display:none;padding:max(20px,env(safe-area-inset-top,0px)) max(20px,env(safe-area-inset-right,0px)) max(20px,env(safe-area-inset-bottom,0px)) max(20px,env(safe-area-inset-left,0px));overflow:auto}
+.intro.on{display:grid;grid-template-rows:auto 1fr auto;animation:introEnter .72s var(--ease) both}
+@keyframes introEnter{from{opacity:0;transform:scale(1.012)}to{opacity:1;transform:scale(1)}}
+.i-aura{position:absolute;width:min(70vw,640px);aspect-ratio:1;right:-12vw;top:-10vw;pointer-events:none}
+.i-aura .net-glow{inset:0}
+.i-top{display:flex;justify-content:space-between;align-items:center;gap:12px;position:relative}
+.i-top .name{font-family:var(--font-display);font-size:30px;color:var(--cobalt);line-height:1.1}
+.i-top .name small{font:700 11px var(--font-sans);letter-spacing:.16em;display:block;color:var(--ink-soft);text-transform:uppercase}
+.ibtn{display:inline-flex;align-items:center;gap:8px;font:700 13px var(--font-sans);background:var(--paper);color:var(--cobalt-deep);border:1.5px solid var(--sky);border-radius:999px;padding:10px 20px;cursor:pointer;transition:border-color .2s,transform .2s}
+.ibtn:hover:not(:disabled){border-color:var(--cobalt)}
+.ibtn:disabled{opacity:.4;cursor:default}
+.ibtn.solid{background:var(--cobalt-deep);color:#fff;border-color:var(--cobalt-deep)}
+.ibtn.solid:hover{transform:translateY(-1px)}
+.i-main{display:grid;align-content:center;max-width:780px;width:100%;margin-inline:auto;position:relative;padding-block:24px}
+.i-slide{display:grid;gap:12px;animation:slideScene .62s var(--ease) both}
+@keyframes slideScene{from{opacity:0;transform:translateY(12px) scale(.99);filter:blur(4px)}to{opacity:1;transform:none;filter:blur(0)}}
+.i-fig span{display:inline-block;min-width:.7em;font-variant-numeric:tabular-nums}
+.i-lab .ico{animation:iconFloat 2.6s ease-in-out infinite}
+@keyframes iconFloat{0%,100%{transform:translateY(0) rotate(0)}50%{transform:translateY(-4px) rotate(-5deg)}}
+.i-lab{display:flex;align-items:center;gap:10px;font-size:13px;font-weight:700;letter-spacing:.14em;text-transform:uppercase;color:var(--ink-soft)}
+.i-lab .ico{color:var(--cobalt);width:24px;height:24px}
+.i-fig{font-family:var(--font-display);font-size:clamp(88px,21vw,210px);line-height:.92;color:var(--cobalt);letter-spacing:-.02em}
+.i-fig small{font-size:.32em;margin-left:10px;letter-spacing:0}
+.i-copy{font-size:clamp(19px,2.8vw,27px);font-weight:700;line-height:1.4;max-width:24em;letter-spacing:-.01em}
+.i-more{font-size:clamp(15px,1.8vw,17px);color:var(--ink-soft);max-width:36em}
+.i-src{font-size:13px;font-weight:600;color:var(--cobalt-deep)}
+.i-nav{display:flex;flex-wrap:wrap;gap:12px;align-items:center;justify-content:space-between;position:relative}
+.i-progress{position:absolute;left:0;right:0;bottom:-12px;height:3px;background:var(--sky);border-radius:99px;overflow:hidden}
+.i-progress span{display:block;width:0;height:100%;background:linear-gradient(90deg,var(--aqua),var(--cobalt),var(--violet));border-radius:99px;transition:width .75s var(--ease)}
+.dots{display:flex;gap:8px}
+.dots button{width:30px;height:6px;border-radius:99px;border:0;background:var(--sky);cursor:pointer;padding:0;transition:background .3s,width .4s var(--ease)}
+.dots button[aria-current="true"]{background:var(--cobalt);width:44px}
+.i-btns{display:flex;gap:10px;flex-wrap:wrap}
+.i-slide>*{animation:rise .7s var(--ease) both}
+.i-slide>*:nth-child(2){animation-delay:.08s}.i-slide>*:nth-child(3){animation-delay:.16s}.i-slide>*:nth-child(4){animation-delay:.24s}.i-slide>*:nth-child(5){animation-delay:.32s}
+@keyframes rise{from{opacity:0;transform:translateY(16px)}to{opacity:1;transform:none}}
+
+/* ---------- text + scroll reveals ---------- */
+.js .rv{opacity:0;transform:translateY(26px);transition:opacity .9s var(--ease),transform .9s var(--ease);transition-delay:calc(var(--i,0) * 110ms)}
+.js .rv.in{opacity:1;transform:none}
+.js .rv.in.tilt{transform:perspective(900px) rotateX(var(--rx,0deg)) rotateY(var(--ry,0deg))}
+.tilt.done{transition:transform .2s ease-out,box-shadow .3s,border-color .3s!important;transition-delay:0s!important}
+.ch{display:inline-block;white-space:pre}
+.js .chars .ch{opacity:0;transform:translateY(.7em) rotate(4deg);transition:opacity .6s ease,transform .8s var(--ease);transition-delay:calc(var(--c) * 34ms)}
+.js .chars.in .ch{opacity:1;transform:none}
+.js .chars.in .ch.live{transition:transform .3s var(--ease),color .3s;transition-delay:0s}
+.chars.in .ch.live:hover{transform:translateY(-.1em);color:var(--aqua)}
+.word{display:inline-block;white-space:nowrap}
+.w{display:inline-block;overflow:hidden;vertical-align:top;padding-bottom:.12em;margin-bottom:-.12em}
+.wi{display:inline-block}
+.js .words .wi{transform:translateY(115%);transition:transform .9s var(--ease);transition-delay:calc(var(--c) * 45ms)}
+.js .words.in .wi{transform:none}
+.js [data-par]{will-change:transform}
+
+@media (prefers-reduced-motion:reduce){
+  /* Keep readable entrance feedback while easing back the strongest decorative loops. */
+  .halo,.halo2,.hero-circle,.net-glow i,.net-core,.sdots a.on i,.mq,.i-lab .ico,.loader-orbit,.loader-orbit::before,.loader-orbit::after,.loader-orbit span,.loader-dots i{animation-duration:3.5s!important}
+  .js .rv,.js .chars .ch,.js .words .wi{transition-duration:.55s}
+  .js .rv{transform:translateY(12px)}
+  .js .rv.in,.js .chars.in .ch,.js .words.in .wi{opacity:1;transform:none}
+  .s-title::after{transition-duration:.55s}
+}
+@media (max-width:860px){
+  .hero .wrap,.s-head,.diagram{grid-template-columns:1fr}
+  .hero-frame{order:-1;max-width:340px}
+  section.s{padding-block:66px}
+  .nav{justify-content:flex-start}
+}
+@media (max-width:640px){
+  .kvs .row{grid-template-columns:1fr auto}
+  .kvs .row .k{grid-column:1/-1;min-width:0}
+  .sdots a b{display:none}
+  .sdots{padding:8px 5px}
+  .slide{aspect-ratio:4/3}
+  .cap{left:12px;right:12px;bottom:12px;padding:12px 14px}
+  .cap b{font-size:20px}
+}
+</style>
+
+<svg class="sprite" aria-hidden="true" focusable="false">
+  <symbol id="i-book" viewBox="0 0 24 24"><path d="M3 5.5C5 4.5 8 4.5 12 6.5c4-2 7-2 9-1V19c-2-1-5-1-9 1-4-2-7-2-9-1z"/><path d="M12 6.5V20"/></symbol>
+  <symbol id="i-bulb" viewBox="0 0 24 24"><path d="M9 18h6M10 21h4"/><path d="M12 3a6 6 0 0 0-3.5 10.9c.6.5 1 1.2 1 2.1h5c0-.9.4-1.6 1-2.1A6 6 0 0 0 12 3z"/></symbol>
+  <symbol id="i-users" viewBox="0 0 24 24"><circle cx="9" cy="8" r="3"/><path d="M3 20c0-3.3 2.7-6 6-6s6 2.7 6 6"/><circle cx="17" cy="9" r="2.4"/><path d="M17 14.5c2.4 0 4 1.8 4 4.5"/></symbol>
+  <symbol id="i-globe" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M3 12h18M12 3c3 3 3 15 0 18M12 3c-3 3-3 15 0 18"/></symbol>
+  <symbol id="i-landmark" viewBox="0 0 24 24"><path d="M3 10l9-6 9 6M5 10v8M9 10v8M15 10v8M19 10v8M3 20h18"/></symbol>
+  <symbol id="i-brief" viewBox="0 0 24 24"><rect x="3" y="7" width="18" height="13" rx="2"/><path d="M9 7V5a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v2M3 13h18"/></symbol>
+  <symbol id="i-leaf" viewBox="0 0 24 24"><path d="M5 19c0-8 5-14 15-14 0 10-6 15-14 15"/><path d="M5 19c3-5 6-8 10-10"/></symbol>
+  <symbol id="i-mail" viewBox="0 0 24 24"><rect x="3" y="5" width="18" height="14" rx="2"/><path d="M3 7l9 6 9-6"/></symbol>
+  <symbol id="i-phone" viewBox="0 0 24 24"><path d="M6 3h3l2 5-2.5 1.5a11 11 0 0 0 6 6L16 13l5 2v3a2 2 0 0 1-2 2A16 16 0 0 1 4 5a2 2 0 0 1 2-2z"/></symbol>
+  <symbol id="i-pin" viewBox="0 0 24 24"><path d="M12 21s7-6 7-11a7 7 0 0 0-14 0c0 5 7 11 7 11z"/><circle cx="12" cy="10" r="2.5"/></symbol>
+  <symbol id="i-link" viewBox="0 0 24 24"><path d="M10 14a4 4 0 0 0 5.7 0l3-3a4 4 0 0 0-5.7-5.7l-1 1"/><path d="M14 10a4 4 0 0 0-5.7 0l-3 3a4 4 0 0 0 5.7 5.7l1-1"/></symbol>
+  <symbol id="i-copy" viewBox="0 0 24 24"><rect x="9" y="9" width="11" height="11" rx="2"/><path d="M5 15V6a2 2 0 0 1 2-2h8"/></symbol>
+  <symbol id="i-arrow" viewBox="0 0 24 24"><path d="M5 12h14M13 6l6 6-6 6"/></symbol>
+  <symbol id="i-mic" viewBox="0 0 24 24"><rect x="9" y="3" width="6" height="12" rx="3"/><path d="M5 11a7 7 0 0 0 14 0M12 18v3"/></symbol>
+  <symbol id="i-award" viewBox="0 0 24 24"><circle cx="12" cy="9" r="6"/><path d="M8.5 14L7 21l5-3 5 3-1.5-7"/></symbol>
+  <symbol id="i-camera" viewBox="0 0 24 24"><path d="M4 8h3l2-3h6l2 3h3v11H4z"/><circle cx="12" cy="13" r="3.5"/></symbol>
+  <symbol id="i-play" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M10 8.5l6 3.5-6 3.5z"/></symbol>
+  <symbol id="i-laptop" viewBox="0 0 24 24"><rect x="5" y="5" width="14" height="10" rx="1.5"/><path d="M3 19h18"/></symbol>
+  <symbol id="i-heart" viewBox="0 0 24 24"><path d="M12 20s-8-5-8-11a4.5 4.5 0 0 1 8-2.5A4.5 4.5 0 0 1 20 9c0 6-8 11-8 11z"/></symbol>
+  <symbol id="i-chart" viewBox="0 0 24 24"><path d="M4 20V4M4 20h16M8 16v-4M12 16V8M16 16v-6"/></symbol>
+  <symbol id="i-compass" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M15.5 8.5l-2 5-5 2 2-5z"/></symbol>
+  <symbol id="i-cap" viewBox="0 0 24 24"><path d="M2 9l10-5 10 5-10 5z"/><path d="M6 11v5c3 2 9 2 12 0v-5"/></symbol>
+  <symbol id="i-coin" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M14.5 9a2.5 2.5 0 0 0-2.5-1.5c-1.5 0-2.5.8-2.5 2s1 1.7 2.5 2 2.5.8 2.5 2-1 2-2.5 2A2.5 2.5 0 0 1 9.5 15M12 6v1.5M12 16.5V18"/></symbol>
+  <symbol id="i-flask" viewBox="0 0 24 24"><path d="M9 3h6M10 3v6l-5 9a2 2 0 0 0 1.7 3h10.6a2 2 0 0 0 1.7-3l-5-9V3"/></symbol>
+  <symbol id="i-megaphone" viewBox="0 0 24 24"><path d="M3 10v4l11 5V5zM14 8a4 4 0 0 1 0 8M6 14l1 5h3"/></symbol>
+  <symbol id="i-warn" viewBox="0 0 24 24"><path d="M12 4l9 16H3z"/><path d="M12 10v4M12 17v.5"/></symbol>
+  <symbol id="i-check" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M8 12.5l2.7 2.7L16 9.5"/></symbol>
+  <symbol id="i-share" viewBox="0 0 24 24"><circle cx="6" cy="12" r="2.5"/><circle cx="18" cy="6" r="2.5"/><circle cx="18" cy="18" r="2.5"/><path d="M8.2 11l7.6-4M8.2 13l7.6 4"/></symbol>
+  <symbol id="i-back-icon" viewBox="0 0 24 24"><path d="M19 12H5M11 6l-6 6 6 6"/></symbol>
+  <symbol id="i-cal" viewBox="0 0 24 24"><rect x="3" y="5" width="18" height="16" rx="2"/><path d="M3 10h18M8 3v4M16 3v4"/></symbol>
+</svg>
+
+<div class="aura" id="aura" aria-hidden="true"></div>
+
+<div class="page-loader" id="page-loader" role="status" aria-label="Loading Arete">
+  <div class="loader-orbit" aria-hidden="true"><span>A</span><i class="loader-satellite s1"></i><i class="loader-satellite s2"></i></div>
+  <p class="loader-wordmark">Arete</p>
+  <p class="loader-kicker">Youth · Education · Action</p>
+  <p class="loader-status"><span id="loader-status-text">Starting in the Philippines</span><span class="loader-dots" aria-hidden="true"><i></i><i></i><i></i></span></p>
+  <p class="loader-fact"><strong>15.2%</strong> — about 15 in every 100 Filipinos aged 15–24 were not working, studying, or in training in July 2026.<span>Philippine Statistics Authority · July 2026</span></p>
+  <div class="loader-stages" aria-hidden="true"><span class="active">PHILIPPINES</span><i></i><span>GLOBAL CONTEXT</span><i></i><span>LOCAL ACTION</span></div>
+  <div class="loader-track" aria-hidden="true"><span></span></div>
+</div>
+
+<div class="intro" id="intro" role="dialog" aria-modal="true" aria-labelledby="intro-title">
+  <div class="i-aura" aria-hidden="true"><div class="net-glow"><i></i><i></i><i></i></div></div>
+  <div class="i-top">
+    <div class="name" id="intro-title">Arete<small>Youth Empowerment</small></div>
+    <button class="ibtn" id="i-skip" type="button">Skip introduction</button>
+  </div>
+  <div class="i-main" id="i-main" aria-live="polite"></div>
+  <div class="i-nav">
+    <div class="dots" id="i-dots" role="group" aria-label="Statistic progress"></div>
+    <div class="i-btns">
+      <button class="ibtn" id="i-back" type="button"><svg class="ico" style="width:16px;height:16px"><use href="#i-back-icon"/></svg>Back</button>
+      <button class="ibtn solid" id="i-next" type="button">Next</button>
+    </div>
+    <div class="i-progress" role="progressbar" aria-label="Introduction progress" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0"><span id="i-progress-fill"></span></div>
+  </div>
+</div>
+
+<nav class="sdots" id="sdots" aria-label="Page sections"></nav>
+
+<header class="site-head" id="head">
+  <div class="wrap">
+    <a class="brand" href="#top"><span class="logo" data-logo></span><span class="brand-name">Arete</span></a>
+    <nav class="nav" id="mainnav" aria-label="Main">
+      <a href="#evidence">Evidence</a><a href="#framework">Framework</a><a href="#field-experience">Field Experience</a>
+      <a href="#programs">Programs</a><a href="#organizations">Organizations</a><a href="#sources">Sources</a>
+    </nav>
+  </div>
+  <div class="prog" id="prog"></div>
+</header>
+
+<main id="top">
+<section class="hero" id="home">
+  <span class="shape sh1" data-par="-.08"></span><span class="shape sh2" data-par=".1"></span><span class="shape sh3" data-par=".16"></span><span class="shape sh4" data-par="-.14"></span>
+  <div class="wrap">
+    <div>
+      <p class="kicker" data-chars data-live>Arete</p>
+      <h1 data-words>Helping young people learn, lead, and take action</h1>
+      <p class="lede" data-words>Arete is about giving young people better access to learning, room to lead, and a real part in decisions that shape their communities.</p>
+      <div class="hero-cta rv" style="--i:6">
+        <a class="pill" href="#evidence" data-mag>Explore the evidence <span class="ar" aria-hidden="true"><svg class="ico"><use href="#i-arrow"/></svg></span></a>
+        <button class="pill ghost" type="button" data-replay data-mag>Replay intro <span class="ar" aria-hidden="true"><svg class="ico"><use href="#i-arrow"/></svg></span></button>
+      </div>
+    </div>
+    <div class="hero-frame" data-par="-.05">
+      <div class="halo" aria-hidden="true"></div><div class="halo2" aria-hidden="true"></div>
+      <div class="hero-circle" id="hero-media"></div>
+    </div>
+  </div>
+</section>
+<div class="marquee" aria-hidden="true"><div class="mq" id="mq"></div></div>
+
+<section class="s" id="evidence">
+  <div class="wrap">
+    <div class="s-head">
+      <h2 class="s-title" data-chars><span class="s-title-text">Evidence</span><span class="s-sub">What the numbers show</span></h2>
+      <div><p class="s-lead" data-words>These figures give a snapshot of education, work, and internet use in the Philippines, followed by selected global comparisons. Each card names the group counted and the year the data covers.</p></div>
+    </div>
+    <aside class="stats-note rv" role="note"><strong>How to read these figures:</strong> A percentage means “out of 100.” <strong>NEET</strong> means a young person is not in employment, education, or training; it does not tell us whether that person is looking for a job. <strong>SEA-PLM</strong> is a Southeast Asian assessment that tests Grade 5 reading and mathematics. These figures cover different groups and years, so they are context—not a direct, like-for-like comparison.</aside>
+    <div class="stats skel" id="stats-main"></div>
+    <div class="srcs rv" id="srcs"></div>
+    <p class="qual rv">The age groups and dates differ from card to card. Read each figure with its date and description rather than treating all of them as one ranking.</p>
+    <p class="qual rv">Some figures are older because they are the most recent comparable data cited by the source. Their dates are shown so they are not mistaken for current counts.</p>
+
+    <div class="sub">
+      <h3 class="h3 rv">A global comparison</h3>
+      <p class="qual rv" style="margin-bottom:22px">These global figures cover school access, internet use, climate concern, youth representation, and volunteering. They come from different studies and years; the note on each card explains what was counted.</p>
+      <div class="stats advocacy-stats" id="stats-advocacy" aria-label="Additional sourced global statistics about youth empowerment"></div>
+    </div>
+  </div>
+</section>
+
+<section class="s white" id="framework">
+  <div class="wrap">
+    <div class="s-head">
+      <h2 class="s-title" data-chars><span class="s-title-text">Framework</span><span class="s-sub">Learn · Lead · Act</span></h2>
+      <div>
+        <p class="s-lead" data-words>Young people need chances to practise what they learn, take responsibility, and solve real problems with others.</p>
+        <p class="rv"><strong>Learn:</strong> understand a problem and build useful skills. <strong>Lead:</strong> listen, work with others, and make decisions. <strong>Act:</strong> put those skills to use in a school, barangay, or community—and learn from the result.</p>
+      </div>
+    </div>
+    <div class="diagram">
+      <div class="net fw-net rv" id="net-fw" role="group" aria-label="Learn, Lead, and Act connected to Youth empowerment in an interactive particle network">
+        <div class="net-stage"><div class="net-glow"><i></i><i></i><i></i></div><canvas aria-hidden="true"></canvas><div class="net-core">Youth<br>empowerment</div><div class="net-chips"></div></div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section class="s band" id="advocacy">
+  <span class="shape" style="width:420px;height:420px;right:-120px;top:-140px;border-radius:50%" data-par=".12"></span>
+  <span class="shape" style="width:200px;height:200px;left:-60px;bottom:40px;border-radius:0 100% 0 0" data-par="-.1"></span>
+  <div class="wrap">
+    <div class="s-head">
+      <h2 class="s-title" data-chars><span class="s-title-text">The advocacy</span><span class="s-sub">Why education and leadership belong together</span></h2>
+      <div><p class="s-lead" data-words>Young people need the skills and the chance to help shape the places where they live, study, and work.</p></div>
+    </div>
+    <div class="body">
+      <p class="rv">Education helps young people read, question information, solve problems, and use digital tools. Those skills matter, but they do not go far if students never get the chance to use them.</p>
+      <p class="rv" style="--i:1">Young people also need chances to speak up, make decisions, and help with issues affecting their schools and communities. Arete brings these ideas together through learning, leadership, and community action.</p>
+    </div>
+    <div class="tiles">
+      <article class="tile tilt rv" style="--i:0"><div class="ic"><svg class="ico"><use href="#i-book"/></svg></div><h3>Making learning more accessible</h3><p>Help students get learning opportunities and build the skills to ask questions, think clearly, and solve problems.</p></article>
+      <article class="tile tilt rv" style="--i:1"><div class="ic"><svg class="ico"><use href="#i-bulb"/></svg></div><h3>Building leadership skills</h3><p>Give young people chances to communicate, work with others, make decisions, and take responsibility.</p></article>
+      <article class="tile tilt rv" style="--i:2"><div class="ic"><svg class="ico"><use href="#i-users"/></svg></div><h3>Taking part in community decisions</h3><p>Make room for young people to contribute to issues affecting their schools and communities.</p></article>
+    </div>
+    <div class="transform rv" aria-label="Transformation statement">
+      <span>Learning and skills</span><svg class="ico" aria-hidden="true"><use href="#i-arrow"/></svg><span>Leadership and community action</span>
+    </div>
+  </div>
+</section>
+
+<section class="s" id="field-experience">
+  <div class="wrap">
+    <div class="s-head">
+      <h2 class="s-title" data-chars><span class="s-title-text">Why I support this advocacy</span><span class="s-sub">What shaped my commitment</span></h2>
+      <div><p class="quote" data-words>I learned what youth leadership can look like outside the classroom.</p></div>
+    </div>
+    <div class="prose rv">
+      <p>I became interested in youth empowerment through the Montessori Model United Nations (MMUN) and the Harvard Workshop on Innovation and Leadership (HWIL). These experiences let me hear different viewpoints, work with other students on difficult issues, and turn discussions into proposals.</p>
+    </div>
+    <div class="emph rv">
+      <p class="e1">What I took away was simple.</p>
+      <p class="e2" data-words>Young people do not have to wait until adulthood to contribute.</p>
+      <p class="e3">They need room to try, support when they get stuck, and people who take their ideas seriously.</p>
+    </div>
+
+    <div class="sub" id="actions">
+      <h3 class="h3 rv">What I do</h3>
+      <p class="prose rv" style="margin-bottom:26px">I put that belief into practice by helping other students prepare, learning beyond class, and taking responsibility in student organizations.</p>
+      <div class="grid">
+        <article class="profile tilt rv" style="--i:0"><div class="pi"><svg class="ico"><use href="#i-mic"/></svg></div><span class="cat">Mentoring and facilitation</span><h3>MMUN Bureau</h3><p>On the MMUN Bureau, I help prepare delegates and newer bureau members for diplomacy, negotiation, and public speaking.</p></article>
+        <article class="profile tilt rv" style="--i:1"><div class="pi"><svg class="ico"><use href="#i-cap"/></svg></div><span class="cat">Learning beyond the classroom</span><h3>Self-driven learning</h3><p>I keep learning outside formal classes through online courses, workshops, and regional summits.</p><ul class="plist"><li>OpenAI Academy</li><li>Anthropic Claude Academy</li><li>GCI World Honors Program</li><li>ASLC</li><li>HWIL</li></ul></article>
+        <article class="profile tilt rv" style="--i:2"><div class="pi"><svg class="ico"><use href="#i-compass"/></svg></div><span class="cat">Student leadership</span><h3>President, UN17</h3><p>As President of UN17, I help lead student initiatives and mentor team members as they take on new responsibilities and develop their own ideas.</p></article>
+      </div>
+    </div>
+
+    <div class="sub" id="field">
+      <h3 class="h3 rv">How I put it into practice</h3>
+      <p class="prose rv">Across these roles, I share what I have learned, help other students practise their skills, and take part in initiatives led by students.</p>
+      <div class="cats rv">
+        <span><b>MMUN Bureau</b> · Delegate preparation and facilitation</span>
+        <span><b>UN17</b> · Student leadership and collaborative initiatives</span>
+        <span><b>Courses and conferences</b> · Skills development and learning</span>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section class="s white" id="gallery-section">
+  <div class="wrap">
+    <div class="s-head">
+      <h2 class="s-title" data-chars><span class="s-title-text">Gallery</span><span class="s-sub">Photos and moments from the work</span></h2>
+      <div><p class="s-lead" data-words>Photos and moments from the people, programmes, and learning that have shaped this work.</p></div>
+    </div>
+    <div class="car rv" id="car" tabindex="0" role="region" aria-roledescription="carousel" aria-label="Gallery. Use the left and right arrow keys to change slides.">
+      <div class="car-view"><div class="car-track" id="car-track"></div></div>
+      <div class="car-ctl">
+        <button class="car-btn" id="car-prev" type="button" aria-label="Previous slide"><svg class="ico"><use href="#i-back-icon"/></svg></button>
+        <div class="car-dots" id="car-dots"></div>
+        <span class="car-count" id="car-count" aria-live="polite">01 / 04</span>
+        <button class="car-btn" id="car-next" type="button" aria-label="Next slide"><svg class="ico"><use href="#i-arrow"/></svg></button>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section class="s" id="programs">
+  <div class="wrap">
+    <div class="s-head">
+      <h2 class="s-title" data-chars><span class="s-title-text">Programs</span><span class="s-sub">HUGEM Philippines · 2026 archive</span></h2>
+      <div><p class="s-lead" data-words>Both events have finished. This section explains what each event focused on, what participants did, and when it took place, based on the official event pages.</p></div>
+    </div>
+    <div class="grid" id="programs-grid" style="grid-template-columns:repeat(auto-fit,minmax(320px,1fr))"></div>
+  </div>
+</section>
+
+<section class="s white" id="organizations">
+  <div class="wrap">
+    <div class="s-head">
+      <h2 class="s-title" data-chars><span class="s-title-text">Organizations</span><span class="s-sub">Organizations taking action</span></h2>
+      <div>
+        <p class="s-lead" data-words>HUGEM runs student workshops on global citizenship. DoSomething runs campaigns that help young people take action on issues they care about. They work in different countries and settings, so these are useful examples—not direct substitutes for Philippine programmes.</p>
+      </div>
+    </div>
+    <div id="orgs"></div>
+  </div>
+</section>
+
+<section class="s" id="sources">
+  <div class="wrap">
+    <div class="s-head">
+      <h2 class="s-title" data-chars><span class="s-title-text">Sources</span><span class="s-sub">Original reports and programme pages</span></h2>
+      <div><p class="s-lead" data-words>Each link goes to the original report or programme page, so you can check the number, date, and details for yourself.</p></div>
+    </div>
+    <div class="refgroup">Program and organization sources</div>
+    <ol class="refs" id="refs-a"></ol>
+    <div class="refgroup">Philippine data and statistics in the introduction</div>
+    <ol class="refs" id="refs-b" start="5"></ol>
+    <div class="refgroup">Additional global data</div>
+    <ol class="refs" id="refs-c" start="11"></ol>
+    <p class="qual rv">Every statistic names the group counted and the date of the data. Older figures are labelled so they are not mistaken for current estimates.</p>
+  </div>
+</section>
+</main>
+
+<footer>
+  <div class="wrap">
+    <div class="brand" style="font-size:26px"><span class="logo" data-logo></span><span class="brand-name">Arete</span></div>
+    <p>Most figures here come from Philippine sources, including the Philippine Statistics Authority and the UNICEF/SEAMEO Grade 5 learning assessment. The global figures come from UNESCO, the IPU, ILO, ITU, the World Bank, The Lancet Planetary Health, and the OECD. Open the Sources section to check each original report and date.</p>
+    <nav aria-label="Footer"><a href="#evidence">Evidence</a><a href="#framework">Framework</a><a href="#field-experience">Field Experience</a><a href="#programs">Programs</a><a href="#organizations">Organizations</a><a href="#sources">Sources</a></nav>
+    <div><button class="mini" type="button" data-replay><svg class="ico"><use href="#i-play"/></svg>Replay intro</button></div>
+    <p>© 2026 Arete</p>
+  </div>
+</footer>
+
+<script>
+// Enable animation-dependent styles only when JavaScript is available.
+document.documentElement.classList.add("js");
+
+/* =====================================================================
+   SITE CONFIGURATION
+   Edit media URLs here. Leave a URL empty to show the designed placeholder.
+   The gallery titles and descriptions are kept beside their media settings.
+   ===================================================================== */
+const SITE_CONFIG = {
+  media: {
+    logo: "",   // Arete logo image URL (shown top-left and in the footer)
+    hero: "",   // hero circle image URL
+    gallery: [
+      { src: "", title: "MMUN Bureau sessions",        text: "Delegate preparation, facilitation, and mentorship.", icon: "i-mic" },
+      { src: "", title: "UN17 team activities",        text: "Student initiatives and work done as a team.",     icon: "i-users" },
+      { src: "", title: "Courses and learning",   text: "Courses, conferences, and skills developed along the way.",  icon: "i-award" }
+    ],
+    supportVideo: "",   // video URL for the fourth slide
+    supportVideoTitle: "How to support the advocacy",
+    supportVideoText: "Video resource placeholder."
+  }
+};
+
+/* =====================================================================
+   PAGE CONTENT / DATA
+   Keep statistic values, date ranges, descriptions, and citations together.
+   When updating a statistic, update its source reference and period as well.
+   ===================================================================== */
+const INTRO = [
+  { icon:"i-brief", label:"Philippines · Work and study", v:15.2, d:1, suf:"%", head:"About 15 in every 100 Filipinos aged 15–24 were not working, studying, or in training in July 2026.", more:"The rate was 15.9 in every 100 a year earlier. This is a July snapshot, not an annual average. It includes young people who may or may not be looking for work.", src:"Philippine Statistics Authority · July 2026" },
+  { icon:"i-laptop", label:"Philippines · Internet use", v:78.2, d:1, suf:"%", head:"About 8 in every 10 Filipinos aged 15–64 had used the internet in 2024.", more:"The survey counted anyone who had used the internet in the previous three months. It does not tell us whether their connection at home was reliable or affordable.", src:"Philippine Statistics Authority · 2024" },
+  { icon:"i-book", label:"Philippines · Grade 5 reading", v:14, d:0, suf:"%", head:"14 out of every 100 Grade 5 learners reached the highest reading band in SEA-PLM 2024.", more:"In 2019, it was 10 out of every 100. This is the very highest reading band—not the share of learners who can read at all.", src:"UNICEF / SEAMEO · SEA-PLM 2024" },
+  { icon:"i-book", label:"Global · School access", v:273, d:0, suf:"million", head:"An estimated 273 million children and young people worldwide were not enrolled in school in 2024.", more:"That included 79 million of primary-school age, 64 million of lower-secondary age, and 130 million of upper-secondary age.", src:"UNESCO · 2024 global estimate" },
+  { icon:"i-landmark", label:"Global · Youth in parliament", v:2.8, d:1, suf:"%", head:"About 3 in every 100 members of national parliaments worldwide were under 30, according to the Inter-Parliamentary Union in August 2026.", more:"The share was unchanged from 2023. The source notes that reference dates can vary because national parliaments update their data at different times.", src:"Inter-Parliamentary Union · August 2026" }
+];
+const EVIDENCE = [
+  { icon:"i-chart", label:"Philippines · Grade 5 mathematics", fig:"26", suf:"%", what:"26 out of every 100 Grade 5 learners reached Band 6 or higher in mathematics in SEA-PLM 2024.", more:"In 2019, it was 17 out of every 100. This is the share reaching the assessment's higher score bands; it does not mean they answered every maths question correctly.", meter:26, mcap:"Grade 5 learners reaching Band 6+ · 2024", src:"UNICEF / SEAMEO · SEA-PLM 2024", ref:7 },
+  { icon:"i-users", label:"Philippines · Bullying at school", fig:"42", suf:"%", what:"42 out of every 100 learners attended a school whose principal reported bullying at least monthly in 2024.", more:"It was 55 out of every 100 in 2019. This describes what school principals reported at their schools—not the share of learners who said they had personally been bullied.", meter:42, mcap:"Learners in schools with monthly bullying reports · 2024", src:"UNICEF / SEAMEO · SEA-PLM 2024", ref:7 },
+  { icon:"i-book", label:"Philippines · Out-of-school youth", fig:"7", suf:"%", what:"About 7 out of every 100 people aged 10–19 were out of school in the Philippine Statistics Authority’s 2022 Annual Poverty Indicators Survey (APIS)—more than 1.5 million young people.", more:"This is a 2022 estimate, not a current 2026 count. It remains here as a dated baseline; a newer estimate would need to measure the same age group in a comparable way.", meter:7, mcap:"Ages 10–19 · 2022 estimate", src:"UNICEF Philippines · education data", ref:11 },
+  { icon:"i-brief", label:"Philippines · Youth and work", fig:"32.7", suf:"%", what:"In August 2026, about 33 out of every 100 Filipinos aged 15–24 were working or actively looking for work.", more:"This is the labour-force participation rate, not the employment rate. It includes young people with jobs and those actively looking for one. The rate was 33.3% in August 2025 and 33.7% in July 2026.", meter:32.7, mcap:"Ages 15–24 · August 2026 participation rate", src:"Philippine Statistics Authority · August 2026", ref:5 },
+  { icon:"i-globe", label:"Global · Youth and work or study", fig:"20.4", suf:"%", what:"About 1 in every 5 young people aged 15–24 worldwide were not working, studying, or in training in 2023.", more:"The International Labour Organization estimated that 256.3 million young people were in this group that year. This is a full-year global estimate, so it should not be compared directly with the Philippines' July 2026 figure.", meter:20.4, mcap:"Global youth rate · 2023", src:"International Labour Organization · Global Employment Trends for Youth 2024", ref:12 }
+];
+const ADVOCACY_STATS = [
+  { icon:"i-book", label:"Learning to read", fig:"70", suf:"%", what:"An estimated 70 out of every 100 10-year-olds in low- and middle-income countries could not read and understand a simple text in 2022.", more:"The estimate rose from 57% in 2019, before the pandemic. It covers low- and middle-income countries as a group—not the Philippines alone.", src:"World Bank and partners · Learning Poverty 2022", ref:14, meter:70, mcap:"2022 estimate · low- and middle-income countries" },
+  { icon:"i-cap", label:"Older students out of school", fig:"130", suf:"million", what:"130 million young people of upper-secondary school age were not in school worldwide in 2024. They made up about 48 out of every 100 children and young people who were out of school.", more:"Upper-secondary is the later stage of secondary school; the exact ages vary by country. UNESCO estimated 273 million children and young people were out of school worldwide in total.", src:"UNESCO · Out-of-school estimates", ref:15, meter:48, mcap:"48% of the global out-of-school population" },
+  { icon:"i-users", label:"Gender and opportunity", fig:"2", suf:"in 3", what:"About 2 in every 3 young people worldwide who were not working, studying, or in training in 2023 were women.", more:"The International Labour Organization also found that young women were about twice as likely as young men to be in this situation in 2023.", src:"International Labour Organization · Global Employment Trends for Youth 2024", ref:12, meter:67, mcap:"About two-thirds of global youth not in work or study" },
+  { icon:"i-landmark", label:"Youth representation", fig:"37.1", suf:"%", what:"More than 1 in every 3 parliamentary chambers had no member aged 30 or under in the Inter-Parliamentary Union's 2025 dataset.", more:"The report covered 210 parliamentary chambers across 155 countries, using data available as of 31 July 2025.", src:"Inter-Parliamentary Union · 2025 dataset", ref:9, meter:37.1, mcap:"Parliamentary chambers · data as of July 2025" },
+  { icon:"i-leaf", label:"Climate concern", fig:"59", suf:"%", what:"About 6 in every 10 young people aged 16–25 surveyed across 10 countries were very or extremely worried about climate change.", more:"The study surveyed 10,000 young people across 10 countries and was published in 2021. It was not a Philippines-only survey.", src:"Hickman et al. · The Lancet Planetary Health, 2021", ref:16, meter:59, mcap:"Survey across 10 countries · 2021" },
+  { icon:"i-heart", label:"Volunteering", fig:"22", suf:"/ 38", what:"In 22 of the 38 countries surveyed by the Organisation for Economic Co-operation and Development (OECD), young people reported volunteering for an organization more often than the country's overall average in 2023.", more:"The survey asked about time volunteered to an organization in the previous month. Informal help to a neighbour or community may not be counted in the same way.", src:"OECD · Youth volunteering, 2024", ref:17, meter:58, mcap:"22 of 38 countries · 2023 data" },
+  { icon:"i-laptop", label:"Young people online", fig:"82", suf:"%", what:"About 82 out of every 100 people aged 15–24 worldwide used the internet in 2025.", more:"This measures internet use; it does not tell us whether young people have affordable, private, or reliable internet access at home.", src:"International Telecommunication Union · 2025", ref:13, meter:82, mcap:"Global internet use · ages 15–24 · 2025" }
+];
+// These are the only labels rendered in the Framework particle network.
+const NET_FW = [
+  { icon:"i-book", big:"Learn", label:"Build knowledge and digital skills" },
+  { icon:"i-bulb", big:"Lead", label:"Communicate, solve problems, and make decisions" },
+  { icon:"i-users", big:"Act", label:"Speak up and work on local solutions" }
+];
+const PROGRAMS = [
+  { icon:"i-landmark", name:"HUGEM Workshop on Innovation and Leadership Philippines 2026", cls:"Philippines · 2026 event archive",
+    assoc:"Harvard Undergraduate Global Education Movement (HUGEM), working with The Global Citizen Education Group.",
+    overview:"This workshop looked at how cities in the Philippines could work better for everyone and prepare for future challenges. The event page lists short lectures, team challenges, and hands-on activities about city planning, inequality, transport, education, and climate risks.",
+    focus:[["Official theme","Future-Ready Cities"],["Topics","Making cities more inclusive, improving transport and public services, reducing inequality, and preparing for climate risks."],["Dates","Manila: 22–23 May 2026; Davao: 29–30 May 2026. These dates have passed."],["Activities","Lectures, team challenges, and hands-on activities." ]],
+    web:"https://www.theglobalcitizeneducation.com/event/hugem-workshop-on-innovation-and-leadership-philippines-2026" },
+  { icon:"i-flask", name:"HUGEM Innovation Challenge – Philippines II 2026", cls:"Philippines · 2026 event archive",
+    assoc:"Presented by The Global Citizen Education Group as a HUGEM Innovation Challenge programme.",
+    overview:"A student challenge about using science, technology, and new ideas to build communities that are more sustainable and give more people a fair chance.",
+    focus:[["Official theme","Blueprints for Resilient Communities"],["Topics","Stronger infrastructure, useful digital tools, sustainable growth, and more equal access to opportunities."],["Who took part","Middle- and high-school students, in workshops, team challenges, and mentoring activities about technology and social enterprise."],["Dates and locations","7–15 August 2026; Manila and Davao. These dates have passed." ]],
+    chips:["STEM innovation","Resilient communities","Social enterprise"], chipsLabel:"Themes listed on the event page",
+    web:"https://www.theglobalcitizeneducation.com/event/hugem-innovation-challenge-philippines-ii-2026" }
+];
+const DS = {
+  name:"DoSomething", cls:"Youth-action nonprofit · international reach",
+  desc:"DoSomething is a nonprofit for young people aged 13–25. It runs campaigns on issues they care about, including climate, community life, fairness, safety, and well-being.",
+  support:"Its website says its work has reached young people in every U.S. area code and 189 countries. This is an example of how a youth organization can organize campaigns; it is not data about young people in the Philippines.",
+  contacts:[["i-link","Official website","https://dosomething.org/",false,"https://dosomething.org/"],["i-link","Programmes","https://dosomething.org/programs",false,"https://dosomething.org/programs"]],
+  acts:[["i-megaphone","Speaking up","Campaigns that help young people raise their voices on issues in their communities."],
+        ["i-leaf","Climate and the environment","Projects about caring for the environment and organizing local cleanups."],
+        ["i-book","Education and STEM","Activities that support learning, build practical skills, and introduce science and technology pathways."],
+        ["i-heart","Helping the community","Ways for young people to make their communities safer, kinder, and more sustainable."]]
+};
+const HUGEM = {
+  name:"Harvard Undergraduate Global Education Movement (HUGEM)", cls:"Harvard College student organization",
+  desc:"HUGEM is a Harvard College student organization that runs conferences and workshops for students, roughly ages 10–18. The sessions help them understand global issues, think critically, and practise leadership.",
+  support:"Its programmes include the Innovation Challenge and sessions about new technologies. Its 2026 Philippines events focused on cities and communities that are better prepared for future challenges, using workshops, team challenges, and mentoring.",
+  acts:[["i-globe","Conferences and workshops","Locally grounded learning","HUGEM adapts its workshops to partner schools and the issues students see in their own communities."],
+        ["i-flask","Innovation Challenge","Idea development","The challenge gives students a format for exploring ideas and developing them with others."],
+        ["i-bulb","Sessions on new ideas and technology","New topics","HUGEM also holds sessions to introduce students to new technologies and ideas."]],
+  contactHead:"Connect with HUGEM",
+  contactText:"For current dates, eligibility, partnerships, or other questions, use HUGEM's official website and contact page.",
+  contacts:[["i-link","Official website","https://hugemovement.org/",false,"https://hugemovement.org/"],["i-link","Contact page","https://hugemovement.org/contact",false,"https://hugemovement.org/contact"]]
+};
+const REFS_A = [
+  { t:"Harvard Undergraduate Global Education Movement (HUGEM). Official website and programme models.", u:"https://hugemovement.org/" },
+  { t:"The Global Citizen Education Group. HUGEM Workshop on Innovation and Leadership Philippines 2026. Event description, themes, venues, and listed dates.", u:"https://www.theglobalcitizeneducation.com/event/hugem-workshop-on-innovation-and-leadership-philippines-2026" },
+  { t:"The Global Citizen Education Group. HUGEM Innovation Challenge – Philippines II 2026. Event description, themes, venues, and listed dates.", u:"https://www.theglobalcitizeneducation.com/event/hugem-innovation-challenge-philippines-ii-2026" },
+  { t:"DoSomething. About and mission. Organization description and stated geographic reach.", u:"https://dosomething.org/about" }
+];
+const REFS_B = [
+  { t:"Philippine Statistics Authority. August 2026 Labor Force Survey. Youth labour-force participation (32.7% among ages 15–24). Released 7 October 2026.", u:"https://psa.gov.ph/statistics/labor-force-survey/press-release/node/1684084287" },
+  { t:"Philippine Statistics Authority. Education and Mass Media Statistics. Internet use in 2024 among people aged 15–64.", u:"https://psa.gov.ph/statistics/education-mass-media" },
+  { t:"UNICEF Philippines and SEAMEO. (18 December 2025). SEA-PLM 2024 results: Grade 5 reading, mathematics, and school environment findings.", u:"https://www.unicef.org/philippines/press-releases/latest-sea-plm-2024-reveals-more-learners-philippines-reaching-higher-proficiency" },
+  { t:"UNESCO. Out-of-school rate: global estimates for 2024, including 273 million children and youth out of school.", u:"https://www.unesco.org/en/education/view/outofschool" },
+  { t:"Inter-Parliamentary Union. IPU Parline: Youth representation in parliaments, data updated August 2026; Youth participation in national parliaments 2025 report.", u:"https://data.ipu.org/did-you-know/youth-representation-in-parliaments/" },
+  { t:"Philippine Statistics Authority. July 2026 Labor Force Survey. Youth NEET rate: 15.2% among ages 15–24, down from 15.9% in July 2025. Released 8 September 2026.", u:"https://psa.gov.ph/statistics/labor-force-survey/node/1684084154" }
+];
+const REFS_C = [
+  { t:"UNICEF Philippines. Education data and challenges; cites PSA Annual Poverty Indicators Survey (APIS) 2022 for the out-of-school estimate among ages 10–19.", u:"https://www.unicef.org/philippines/education", flag:"The 7% / more than 1.5 million figure is a 2022 baseline, not a current 2026 estimate." },
+  { t:"International Labour Organization. (16 August 2024). Global Employment Trends for Youth 2024: In figures. Global youth NEET rate and gender distribution.", u:"https://www.ilo.org/resource/article/global-employment-trends-youth-2024-figures" },
+  { t:"International Telecommunication Union. (15 October 2025). Facts and Figures 2025: Youth internet use.", u:"https://www.itu.int/itu-d/reports/statistics/2025/10/15/ff25-youth-internet-use/" },
+  { t:"World Bank and partners. (23 June 2022). 70% of 10-Year-Olds Now in Learning Poverty, Unable to Read and Understand a Simple Text.", u:"https://www.worldbank.org/en/news/press-release/2022/06/23/70-of-10-year-olds-now-in-learning-poverty-unable-to-read-and-understand-a-simple-text", flag:"A 2022 pandemic-era estimate for low- and middle-income countries, not a 2026 measure or a Philippines-only result." },
+  { t:"UNESCO. Global Education Monitoring Report 2026: SDG 4 monitoring and the 2024 out-of-school population by education level.", u:"https://www.unesco.org/reports/gem-report/en/2026-monitoring-sdg4" },
+  { t:"Hickman et al. (2021). Climate anxiety in children and young people and their beliefs about government responses. The Lancet Planetary Health.", u:"https://pubmed.ncbi.nlm.nih.gov/34895496/", flag:"A 10-country survey published in 2021; not a Philippines-only poll." },
+  { t:"OECD. Gagliardi, Pérez-Raynaud and Robinson (2024). Promoting youth volunteering and civic service engagement: A stocktake of national programmes across OECD countries.", u:"https://www.oecd.org/en/publications/promoting-youth-volunteering-and-civic-service-engagement_39659e6a-en.html", flag:"The 22-of-38 comparison refers to OECD countries and 2023 volunteering data, not all countries globally." }
+];
+const SECTIONS = [["home","Home"],["evidence","Evidence"],["framework","Framework"],["advocacy","The advocacy"],["field-experience","Field experience"],["gallery-section","Gallery"],["programs","Programs"],["organizations","Organizations"],["sources","Sources"]];
+
+/* =====================================================================
+   SHARED HELPERS
+   Small DOM, icon, escaping, and interaction utilities used by components.
+   ===================================================================== */
+const $ = (s, r=document) => r.querySelector(s);
+const $$ = (s, r=document) => [...r.querySelectorAll(s)];
+const el = (tag, cls, html) => { const e = document.createElement(tag); if (cls) e.className = cls; if (html != null) e.innerHTML = html; return e; };
+const esc = s => String(s).replace(/[&<>"]/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
+const ic = (id, cls="") => `<svg class="ico ${cls}" aria-hidden="true"><use href="#${id}"/></svg>`;
+const reduce = false; // This page's requested experience is deliberately motion-rich.
+const finePtr = matchMedia("(hover:hover) and (pointer:fine)").matches;
+
+function copyText(text, btn){
+  const label = btn.querySelector("span");
+  const done = m => { if(label){ const o = label.textContent; label.textContent = m; setTimeout(()=>label.textContent = o, 1500); } };
+  const fallback = () => { const v = btn.closest(".row").querySelector(".v"); if(v){ const r = document.createRange(); r.selectNodeContents(v); const s = getSelection(); s.removeAllRanges(); s.addRange(r); } done("Press Ctrl+C"); };
+  try { navigator.clipboard.writeText(text).then(()=>done("Copied"), fallback); } catch(e){ fallback(); }
+}
+function contactRows(list){
+  const box = el("div","kvs");
+  list.forEach(([icon,k,v,copy,href]) => {
+    const row = el("div","row");
+    row.appendChild(el("div","k", ic(icon)+esc(k)));
+    row.appendChild(el("div","v", href ? `<a href="${esc(href)}" target="_blank" rel="noopener noreferrer">${esc(v)}</a>` : esc(v)));
+    if (copy){ const b = el("button","mini", ic("i-copy")+"<span>Copy</span>"); b.type="button"; b.setAttribute("aria-label","Copy "+k+": "+v); b.addEventListener("click",()=>copyText(v,b)); row.appendChild(b); } else row.appendChild(el("span"));
+    box.appendChild(row);
+  });
+  return box;
+}
+
+/* =====================================================================
+   SCROLLING, NAVIGATION, AND GLOBAL MOTION
+   Keep scroll progress, section tracking, and eased navigation coordinated.
+   ===================================================================== */
+let smoothTo;
+(function(){
+  let cur = scrollY, tgt = scrollY, raf = 0;
+  const max = () => document.documentElement.scrollHeight - innerHeight;
+  function tick(){
+    cur += (tgt - cur) * 0.1;
+    if (Math.abs(tgt - cur) < 0.5){ cur = tgt; raf = 0; scrollTo(0, cur); return; }
+    scrollTo(0, cur); raf = requestAnimationFrame(tick);
+  }
+  smoothTo = y => {
+    tgt = Math.max(0, Math.min(max(), y));
+    if (reduce){ scrollTo(0, tgt); cur = tgt; return; }
+    if (!raf){ cur = scrollY; raf = requestAnimationFrame(tick); }
+  };
+  addEventListener("scroll", () => { if (!raf){ cur = tgt = scrollY; } }, { passive:true });
+  if (finePtr && !reduce){
+    addEventListener("wheel", e => {
+      if (e.ctrlKey || document.body.style.overflow === "hidden") return;
+      if (Math.abs(e.deltaX) > Math.abs(e.deltaY)) return;
+      if (e.target.closest && e.target.closest(".nav,video,.intro")) return;
+      e.preventDefault();
+      const d = e.deltaMode === 1 ? e.deltaY * 32 : e.deltaMode === 2 ? e.deltaY * innerHeight : e.deltaY;
+      if (!raf){ cur = scrollY; tgt = scrollY; }
+      smoothTo(tgt + d);
+    }, { passive:false });
+  }
+  document.addEventListener("click", e => {
+    const a = e.target.closest && e.target.closest('a[href^="#"]');
+    if (!a) return;
+    const id = a.getAttribute("href").slice(1);
+    const t = id === "top" ? document.body : document.getElementById(id);
+    if (!t) return;
+    e.preventDefault();
+    const y = id === "top" ? 0 : t.getBoundingClientRect().top + scrollY - 76;
+    smoothTo(y);
+    if (/^ref-/.test(id)){ t.classList.add("flash"); setTimeout(()=>t.classList.remove("flash"), 2200); }
+  });
+})();
+
+/* =====================================================================
+   MEDIA RENDERING
+   Loads configured images/video or falls back to the intentional placeholders.
+   ===================================================================== */
+function setLogo(){
+  const src = SITE_CONFIG.media.logo;
+  $$("[data-logo]").forEach(b => {
+    if (!src){ b.textContent = "LOGO"; b.title = "Arete logo placeholder"; return; }
+    const i = new Image(); i.alt = "Arete logo";
+    i.onload = () => { b.textContent = ""; b.classList.add("has"); b.appendChild(i); };
+    i.onerror = () => { b.textContent = "LOGO"; };
+    i.src = src;
+  });
+}
+function imgInto(box, src, alt, placeholderHtml){
+  const ph = () => { box.innerHTML = placeholderHtml; };
+  if (!src){ ph(); return; }
+  box.innerHTML = '<div class="sk" style="position:absolute;inset:0"></div>';
+  const i = new Image(); i.alt = alt; i.decoding = "async";
+  i.onload = () => { box.innerHTML = ""; i.style.animation = "rise .8s var(--ease) both"; box.appendChild(i); };
+  i.onerror = ph; i.src = src;
+}
+(function(){
+  setLogo();
+  const M = SITE_CONFIG.media;
+  imgInto($("#hero-media"), M.hero, "Hero image",
+    `<div class="ph">${ic("i-camera")}<b>Hero image</b><span>Paste the image link in</span><code>SITE_CONFIG.media.hero</code></div>`);
+  // A timed, readable phrase rotation replaces the old continuous ticker.
+  // Change this list to edit the banner without touching its animation logic.
+  const words = ["Filipino youth","Local solutions","Youth leadership","Community action","Global citizenship"];
+  const mq = $("#mq"), marquee = mq.closest(".marquee");
+  mq.innerHTML = words.map((w,i) => `<span class="${i===0?"active":""}" aria-hidden="true">${ic("i-bulb")}${w}</span>`).join("");
+  const phrases = Array.from(mq.children);
+  let phraseIndex = 0, phraseTimer = null, phrasePaused = false;
+  function advancePhrase(){
+    if (phrasePaused) return;
+    const current = phrases[phraseIndex];
+    const nextIndex = (phraseIndex + 1) % phrases.length;
+    const next = phrases[nextIndex];
+    current.classList.remove("active"); current.classList.add("exit");
+    next.classList.remove("exit"); next.classList.add("active");
+    phraseIndex = nextIndex;
+  }
+  function restartPhraseTimer(){ clearInterval(phraseTimer); phraseTimer = setInterval(advancePhrase, 2500); }
+  marquee.addEventListener("pointerenter", () => { phrasePaused = true; });
+  marquee.addEventListener("pointerleave", () => { phrasePaused = false; restartPhraseTimer(); });
+  restartPhraseTimer();
+})();
+
+/* =====================================================================
+   EVIDENCE AND STATISTIC CARDS
+   Render the content arrays above; source links are generated from references.
+   ===================================================================== */
+(function(){
+  const box = $("#stats-main");
+  EVIDENCE.forEach((s,i) => {
+    const c = el("article","stat tilt rv"+(i>2?" mist-card":""));
+    c.style.setProperty("--i", i % 3);
+    c.innerHTML = `<div class="tag">${ic(s.icon)}${esc(s.label)}</div>
+      <div class="fig"><span data-count="${esc(s.fig)}">${esc(s.fig)}</span><small>${esc(s.suf)}</small></div>
+      <p class="what">${esc(s.what)}</p><p class="more">${esc(s.more)}</p>
+      <div class="meter" role="img" aria-label="${esc(s.mcap)}"><i style="width:${s.meter}%"></i></div><p class="meter-cap">${esc(s.mcap)}</p>
+      <a class="src" href="#ref-${s.ref}">${ic("i-link")}${esc(s.src)}</a>`;
+    box.appendChild(c);
+  });
+  const srcs = $("#srcs");
+  EVIDENCE.forEach(s => { const a = el("a","",`${ic("i-link")}${esc(s.src)}`); a.href = "#ref-"+s.ref; srcs.appendChild(a); });
+  setTimeout(() => box.classList.remove("skel"), reduce ? 0 : 700);
+})();
+
+/* ================= additional advocacy figures ================= */
+(function(){
+  const box = $("#stats-advocacy");
+  if (!box) return;
+  box.classList.add("skel");
+  ADVOCACY_STATS.forEach((s,i) => {
+    const c = el("article", "stat mist-card tilt rv");
+    c.style.setProperty("--i", i % 3);
+    c.innerHTML = `<div class="tag">${ic(s.icon)}${esc(s.label)}</div>
+      <div class="fig"><span data-count="${esc(s.fig)}">${esc(s.fig)}</span><small>${esc(s.suf)}</small></div>
+      <p class="what">${esc(s.what)}</p><p class="more">${esc(s.more)}</p>
+      <div class="meter" role="img" aria-label="${esc(s.mcap)}"><i style="width:${s.meter}%"></i></div>
+      <p class="meter-cap">${esc(s.mcap)}</p>
+      <a class="src" href="#ref-${s.ref}">${ic("i-link")}${esc(s.src)}</a>`;
+    box.appendChild(c);
+  });
+  setTimeout(() => box.classList.remove("skel"), 420);
+})();
+
+/* ================= particle network ================= */
+function ParticleNet(host, items, opt){
+  const stage = $(".net-stage", host), cv = $("canvas", host), ctx = cv.getContext("2d"), chipBox = $(".net-chips", host);
+  const chips = items.map((it,i) => {
+    const c = document.createElement(it.ref ? "a" : "div"); c.className = "net-chip";
+    if (it.ref) c.href = "#ref-"+it.ref; else c.tabIndex = 0;
+    c.innerHTML = (it.icon ? ic(it.icon,"ni") : "") + `<span class="nb">${esc(it.big)}</span><span class="nl">${esc(it.label)}</span>` + (it.extra ? `<span class="nx">${esc(it.extra)}</span>` : "");
+    chipBox.appendChild(c);
+    return { it, c, a0: i / items.length * Math.PI * 2 - Math.PI/2, x:0, y:0, ox:0, oy:0, w:0, h:0 };
+  });
+  let W = 0, H = 0, parts = [], mouse = { x:-9999, y:-9999 }, active = -1, pulses = [], run = false, compact = false, last = performance.now(), spin = 0;
+  const colors = [[53,194,176],[11,87,194],[159,133,234]];
+  function resize(){
+    const r = stage.getBoundingClientRect(); W = r.width; H = r.height;
+    if (!W || !H) return;
+    const dpr = Math.min(devicePixelRatio || 1, 2);
+    cv.width = W*dpr; cv.height = H*dpr; ctx.setTransform(dpr,0,0,dpr,0,0);
+    compact = W < opt.chipMin; host.classList.toggle("compact", compact);
+    const n = compact ? 40 : Math.min(110, Math.max(38, Math.round(W*H/6500)));
+    const cols = Math.ceil(Math.sqrt(n * W / H));
+    const rows = Math.ceil(n / cols);
+    const cellW = W / cols, cellH = H / rows;
+    parts = [];
+    for (let i=0;i<n;i++){
+      const col = i % cols, row = Math.floor(i / cols);
+      const ax = Math.max(8, Math.min(W-8, (col+.5)*cellW + (Math.random()-.5)*cellW*.42));
+      const ay = Math.max(8, Math.min(H-8, (row+.5)*cellH + (Math.random()-.5)*cellH*.42));
+      parts.push({ x:ax+(Math.random()-.5)*6, y:ay+(Math.random()-.5)*6, ax, ay, vx:(Math.random()-.5)*.22, vy:(Math.random()-.5)*.22, r:1.3+Math.random()*2.2, c:colors[i%3] });
+    }
+    chips.forEach(o => { o.w = o.c.offsetWidth; o.h = o.c.offsetHeight; });
+  }
+  function place(o, i, t){
+    const a = o.a0 + spin, rx = W*(opt.rx||.38), ry = H*(opt.ry||.36), cx = W/2, cy = H/2;
+    let x = cx + Math.cos(a)*rx, y = cy + Math.sin(a)*ry + Math.sin(t*.9+i*1.7)*6;
+    const dx = x-mouse.x, dy = y-mouse.y, d = Math.hypot(dx,dy);
+    const tx = d < 170 ? dx/(d||1)*(170-d)*.22 : 0, ty = d < 170 ? dy/(d||1)*(170-d)*.22 : 0;
+    o.ox += (tx-o.ox)*.1; o.oy += (ty-o.oy)*.1;
+    x += o.ox; y += o.oy;
+    const hw = o.w/2+6, hh = o.h/2+6;
+    o.x = Math.max(hw, Math.min(W-hw, x)); o.y = Math.max(hh, Math.min(H-hh, y));
+    o.c.style.transform = `translate(${o.x}px,${o.y}px) translate(-50%,-50%)`;
+  }
+  function step(dt, t){
+    for (const p of parts){
+      // A gentle spring returns each node to its own distributed home position.
+      // That prevents the network from collapsing into a central clump while keeping it alive.
+      p.vx += (p.ax-p.x)*.0022 + (Math.random()-.5)*.018;
+      p.vy += (p.ay-p.y)*.0022 + (Math.random()-.5)*.018;
+      const mx = p.x-mouse.x, my = p.y-mouse.y, md = Math.hypot(mx,my);
+      if (md < 155){ const f = (1-md/155)*1.45; p.vx += mx/(md||1)*f; p.vy += my/(md||1)*f; }
+      for (const pulse of pulses){
+        const radius = pulse.t*380, pd = Math.hypot(p.x-pulse.x,p.y-pulse.y);
+        if (Math.abs(pd-radius) < 34){ const f = (1-Math.abs(pd-radius)/34)*1.2; p.vx += (p.x-pulse.x)/(pd||1)*f; p.vy += (p.y-pulse.y)/(pd||1)*f; }
+      }
+      p.vx *= .94; p.vy *= .94;
+      const speed = Math.hypot(p.vx,p.vy); if (speed > 2){ p.vx *= 2/speed; p.vy *= 2/speed; }
+      p.x += p.vx*dt*60; p.y += p.vy*dt*60;
+      if (p.x < 5 || p.x > W-5) { p.x = Math.max(5,Math.min(W-5,p.x)); p.vx *= -.5; }
+      if (p.y < 5 || p.y > H-5) { p.y = Math.max(5,Math.min(H-5,p.y)); p.vy *= -.5; }
+    }
+    pulses = pulses.filter(pulse => (pulse.t += dt) < 1.4);
+    if (active < 0) spin += dt * .035;
+    if (!compact) chips.forEach((o,i) => place(o, i, t));
+  }
+  function draw(){
+    ctx.clearRect(0,0,W,H);
+    const L = 104;
+    for (let i=0;i<parts.length;i++){
+      const a = parts[i];
+      for (let j=i+1;j<parts.length;j++){
+        const b = parts[j], d = Math.hypot(a.x-b.x,a.y-b.y);
+        if (d < L){ ctx.strokeStyle = `rgba(11,87,194,${(1-d/L)*.26})`; ctx.lineWidth = 1; ctx.beginPath(); ctx.moveTo(a.x,a.y); ctx.lineTo(b.x,b.y); ctx.stroke(); }
+      }
+      const md = Math.hypot(a.x-mouse.x,a.y-mouse.y);
+      if (md < 140){ ctx.strokeStyle = `rgba(53,194,176,${(1-md/140)*.7})`; ctx.lineWidth = 1.2; ctx.beginPath(); ctx.moveTo(a.x,a.y); ctx.lineTo(mouse.x,mouse.y); ctx.stroke(); }
+    }
+    if (!compact){
+      chips.forEach((o,i) => {
+        const on = i === active;
+        const near = parts.map(p => ({p, d:Math.hypot(p.x-o.x,p.y-o.y)})).sort((u,v)=>u.d-v.d).slice(0, on ? 22 : 3);
+        ctx.lineWidth = on ? 1.4 : 1;
+        near.forEach(n => { if (on && n.d > 260) return; ctx.strokeStyle = on ? `rgba(11,87,194,${Math.max(.25,.8-n.d/340)})` : "rgba(11,87,194,.22)"; ctx.beginPath(); ctx.moveTo(o.x,o.y); ctx.lineTo(n.p.x,n.p.y); ctx.stroke(); });
+        ctx.strokeStyle = on ? "rgba(11,87,194,.6)" : "rgba(11,87,194,.16)"; ctx.setLineDash(on ? [] : [4,6]); ctx.beginPath(); ctx.moveTo(o.x,o.y); ctx.lineTo(W/2,H/2); ctx.stroke(); ctx.setLineDash([]);
+      });
+    } else if (active >= 0){
+      ctx.strokeStyle = "rgba(11,87,194,.35)";
+      parts.forEach(p => { ctx.beginPath(); ctx.moveTo(W/2,H/2); ctx.lineTo(p.x,p.y); ctx.stroke(); });
+    }
+    for (const s of pulses){ ctx.strokeStyle = `rgba(53,194,176,${.5*(1-s.t/1.4)})`; ctx.lineWidth = 2; ctx.beginPath(); ctx.arc(s.x,s.y,s.t*380,0,6.283); ctx.stroke(); }
+    for (const p of parts){ ctx.fillStyle = `rgba(${p.c[0]},${p.c[1]},${p.c[2]},.8)`; ctx.beginPath(); ctx.arc(p.x,p.y,p.r,0,6.283); ctx.fill(); }
+  }
+  function loop(now){
+    if (!run) return;
+    const dt = Math.min(.05,(now-last)/1000); last = now;
+    step(dt, now/1000); draw(); requestAnimationFrame(loop);
+  }
+  function start(){ if (run || reduce) return; run = true; last = performance.now(); requestAnimationFrame(loop); }
+  function pos(e){ const r = stage.getBoundingClientRect(); mouse.x = e.clientX - r.left; mouse.y = e.clientY - r.top; }
+  stage.addEventListener("pointermove", pos);
+  stage.addEventListener("pointerleave", () => { mouse.x = mouse.y = -9999; });
+  stage.addEventListener("pointerdown", e => { pos(e); pulses.push({ x:mouse.x, y:mouse.y, t:0 }); });
+  chips.forEach((o,i) => {
+    const on = () => { active = i; o.c.classList.add("act"); if (compact) pulses.push({ x:W/2, y:H/2, t:0 }); };
+    const off = () => { if (active === i) active = -1; o.c.classList.remove("act"); };
+    o.c.addEventListener("pointerenter", on); o.c.addEventListener("pointerleave", off);
+    o.c.addEventListener("focus", on); o.c.addEventListener("blur", off);
+  });
+  const still = () => { if (!compact) chips.forEach((o,i) => place(o, i, 0)); draw(); };
+  new ResizeObserver(() => { resize(); if (reduce) still(); }).observe(stage);
+  resize();
+  if (reduce){ still(); return; }
+  new IntersectionObserver(es => es.forEach(e => { if (e.isIntersecting) start(); else run = false; }), { threshold:.05 }).observe(host);
+}
+ParticleNet($("#net-fw"), NET_FW, { chipMin:380, rx:.34, ry:.33 });
+
+/* ================= programs, organizations, references ================= */
+(function(){
+  const pg = $("#programs-grid");
+  PROGRAMS.forEach((p,i) => {
+    const a = el("article","profile tilt rv"); a.style.setProperty("--i", i % 3);
+    let h = `<div class="pi">${ic(p.icon)}</div><span class="cls">${esc(p.cls)}</span><h3>${esc(p.name)}</h3>`;
+    if (p.full) h += `<p><b>Full name:</b> ${esc(p.full)}</p>`;
+    if (p.assoc) h += `<p>${esc(p.assoc)}</p>`;
+    h += `<div class="sub-h">Program overview</div><p>${esc(p.overview)}</p><div class="sub-h">Key focus</div>`;
+    if (typeof p.focus[0] === "string") h += `<p>${esc(p.focus[0])}</p>`;
+    else h += `<ul class="sublist">${p.focus.map(f=>`<li><b>${esc(f[0])}</b><br>${esc(f[1])}</li>`).join("")}</ul>`;
+    if (p.chips) h += `<div class="sub-h">${esc(p.chipsLabel)}</div><ul class="plist">${p.chips.map(c=>`<li>${esc(c)}</li>`).join("")}</ul>`;
+    a.innerHTML = h;
+    if (p.web) a.appendChild(contactRows([["i-link","Official event page",p.web,false,p.web]]));
+    if (p.contacts) a.appendChild(contactRows(p.contacts));
+    pg.appendChild(a);
+  });
+
+  const orgs = $("#orgs");
+  const d = el("div");
+  d.innerHTML = `<h3 class="h3 rv">${esc(DS.name)}</h3>`;
+  const dgrid = el("div","grid"); dgrid.style.gridTemplateColumns = "repeat(auto-fit,minmax(320px,1fr))";
+  const dp = el("article","profile tilt rv");
+  dp.innerHTML = `<div class="pi">${ic("i-heart")}</div><span class="cls">${esc(DS.cls)}</span><div class="sub-h">Organization description</div><p>${esc(DS.desc)}</p><div class="sub-h">Support framework</div><p>${esc(DS.support)}</p>`;
+  dgrid.appendChild(dp);
+  const dc = el("article","profile tilt rv"); dc.style.setProperty("--i",1); dc.innerHTML = `<div class="pi">${ic("i-mail")}</div><h3>Contact information</h3>`;
+  dc.appendChild(contactRows(DS.contacts)); dgrid.appendChild(dc);
+  d.appendChild(dgrid);
+  const dh = el("h4","h3 rv","Group activities"); dh.style.cssText = "font-size:24px;margin-top:40px"; d.appendChild(dh);
+  const ag = el("div","grid");
+  DS.acts.forEach((a,i) => { const c = el("div","card tilt rv", `<h3>${ic(a[0])}${esc(a[1])}</h3><p>${esc(a[2])}</p>`); c.style.setProperty("--i", i%3); ag.appendChild(c); });
+  d.appendChild(ag);
+  orgs.appendChild(d);
+
+  const h = el("div","sub");
+  h.innerHTML = `<span class="cls rv">${esc(HUGEM.cls)}</span><h3 class="h3 rv" style="margin-top:12px">${esc(HUGEM.name)}</h3>`;
+  const hg = el("div","grid"); hg.style.gridTemplateColumns = "repeat(auto-fit,minmax(320px,1fr))";
+  const hp = el("article","profile tilt rv");
+  hp.innerHTML = `<div class="pi">${ic("i-cap")}</div><div class="sub-h">Description</div><p>${esc(HUGEM.desc)}</p><div class="sub-h">How it supports the advocacy</div><p>${esc(HUGEM.support)}</p>`;
+  hg.appendChild(hp);
+  const hc = el("article","profile tilt rv"); hc.style.setProperty("--i",1);
+  hc.innerHTML = `<div class="pi">${ic("i-mail")}</div><h3>${esc(HUGEM.contactHead)}</h3><p>${esc(HUGEM.contactText)}</p>`;
+  hc.appendChild(contactRows(HUGEM.contacts));
+  hg.appendChild(hc);
+  h.appendChild(hg);
+  const hh = el("h4","h3 rv","Group activities"); hh.style.cssText = "font-size:24px;margin-top:40px"; h.appendChild(hh);
+  const hag = el("div","grid");
+  HUGEM.acts.forEach((a,i) => { const c = el("div","card tilt rv", `<h3>${ic(a[0])}${esc(a[1])}</h3><p><b>${esc(a[2])}</b></p><p style="margin-top:6px">${esc(a[3])}</p>`); c.style.setProperty("--i", i%3); hag.appendChild(c); });
+  h.appendChild(hag);
+  orgs.appendChild(h);
+
+  const addRefs = (list, target, start) => list.forEach((r,i) => {
+    const n = start+i;
+    const li = el("li","rv"); li.id = "ref-"+n;
+    li.appendChild(el("span","n", String(n)));
+    li.appendChild(el("span","t", esc(r.t)));
+    li.appendChild(el("span","u", `<a href="${esc(r.u)}" target="_blank" rel="noopener noreferrer">${esc(r.u)}</a>`));
+    if (r.flag) li.appendChild(el("span","fl", ic("i-warn")+"<span>"+esc(r.flag)+"</span>"));
+    $(target).appendChild(li);
+  });
+  addRefs(REFS_A, "#refs-a", 1); addRefs(REFS_B, "#refs-b", 5); addRefs(REFS_C, "#refs-c", 11);
+})();
+
+/* ================= gallery carousel ================= */
+(function(){
+  const M = SITE_CONFIG.media, track = $("#car-track"), dotsBox = $("#car-dots"), car = $("#car");
+  const slides = M.gallery.map(g => ({ ...g })).concat([{ src:"", video:M.supportVideo, title:M.supportVideoTitle, text:M.supportVideoText, icon:"i-play" }]);
+  const n = slides.length; let ci = 0; const els = [];
+  slides.forEach((s,i) => {
+    const sl = el("div","slide"); sl.setAttribute("role","group"); sl.setAttribute("aria-roledescription","slide"); sl.setAttribute("aria-label",(i+1)+" of "+n+": "+s.title);
+    const media = el("div","media"); sl.appendChild(media);
+    const isVid = s.video !== undefined;
+    const phHtml = `<div class="ph">${ic(s.icon)}<b style="color:var(--ink);font-size:16px">${esc(s.title)}</b><span>Placeholder. Paste the ${isVid?"video":"image"} link in</span><code>${isVid?"SITE_CONFIG.media.supportVideo":"SITE_CONFIG.media.gallery["+i+"].src"}</code></div>`;
+    if (isVid){
+      if (!s.video) media.innerHTML = phHtml;
+      else { const v = document.createElement("video"); v.controls = true; v.preload = "metadata"; v.src = s.video; v.setAttribute("aria-label", s.title); v.onerror = () => media.innerHTML = phHtml; media.appendChild(v); }
+    } else imgInto(media, s.src, s.title, phHtml);
+    sl.appendChild(el("div","cap", `<b>${esc(s.title)}</b><span>${esc(s.text)}</span>`));
+    track.appendChild(sl); els.push(sl);
+    const b = el("button"); b.type = "button"; b.setAttribute("aria-label","Go to slide "+(i+1)); b.addEventListener("click", () => go(i)); dotsBox.appendChild(b);
+  });
+  function go(i){
+    ci = (i + n) % n;
+    track.style.transform = `translateX(${-ci*100}%)`;
+    els.forEach((s,j) => { s.classList.toggle("act", j===ci); s.setAttribute("aria-hidden", j===ci ? "false" : "true"); const v = $("video", s); if (v && j!==ci) v.pause(); });
+    [...dotsBox.children].forEach((b,j) => j===ci ? b.setAttribute("aria-current","true") : b.removeAttribute("aria-current"));
+    $("#car-count").textContent = String(ci+1).padStart(2,"0")+" / "+String(n).padStart(2,"0");
+  }
+  $("#car-prev").addEventListener("click", () => go(ci-1));
+  $("#car-next").addEventListener("click", () => go(ci+1));
+  car.addEventListener("keydown", e => { if (e.key === "ArrowRight"){ e.preventDefault(); go(ci+1); } else if (e.key === "ArrowLeft"){ e.preventDefault(); go(ci-1); } });
+  let sx = null;
+  const view = $(".car-view", car);
+  view.addEventListener("pointerdown", e => { sx = e.clientX; });
+  view.addEventListener("pointerup", e => { if (sx === null) return; const dx = e.clientX - sx; sx = null; if (Math.abs(dx) > 50) go(ci + (dx < 0 ? 1 : -1)); });
+  go(0);
+})();
+
+/* ================= scroll-linked: progress, parallax, active section ================= */
+(function(){
+  const head = $("#head"), prog = $("#prog"), pars = $$("[data-par]");
+  const sd = $("#sdots");
+  SECTIONS.forEach(([id,label]) => { const a = el("a","", `<b>${esc(label)}</b><i></i>`); a.href = "#"+id; a.setAttribute("aria-label", label); sd.appendChild(a); });
+  const dots = $$("a", sd), navLinks = $$("#mainnav a");
+  const secEls = SECTIONS.map(([id]) => document.getElementById(id));
+  const navMap = { evidence:"#evidence", framework:"#framework", "field-experience":"#field-experience", "gallery-section":"#field-experience", programs:"#programs", organizations:"#organizations", sources:"#sources" };
+  let ticking = false;
+  function update(){
+    ticking = false;
+    const y = scrollY, max = document.documentElement.scrollHeight - innerHeight;
+    prog.style.setProperty("--p", max > 0 ? (y/max).toFixed(4) : 0);
+    head.classList.toggle("scrolled", y > 40);
+    let idx = 0; const probe = innerHeight * .4;
+    secEls.forEach((s,i) => { if (s && s.getBoundingClientRect().top <= probe) idx = i; });
+    if (max - y < 40) idx = secEls.length - 1;
+    dots.forEach((d,i) => d.classList.toggle("on", i === idx));
+    const href = navMap[SECTIONS[idx][0]];
+    navLinks.forEach(a => a.classList.toggle("on", a.getAttribute("href") === href));
+    if (!reduce) pars.forEach(p => { const r = p.parentElement.getBoundingClientRect(); const k = parseFloat(p.dataset.par); p.style.transform = `translate3d(0,${((r.top + r.height/2) - innerHeight/2) * k}px,0)`; });
+  }
+  addEventListener("scroll", () => { if (!ticking){ ticking = true; requestAnimationFrame(update); } }, { passive:true });
+  addEventListener("resize", update);
+  update();
+})();
+
+/* ================= pointer effects: aura, tilt, magnetic ================= */
+(function(){
+  if (!finePtr || reduce) return;
+  const aura = $("#aura"); let ax = innerWidth/2, ay = innerHeight/2, tx = ax, ty = ay, shown = false;
+  addEventListener("pointermove", e => { tx = e.clientX; ty = e.clientY; if (!shown){ shown = true; aura.classList.add("on"); ax = tx; ay = ty; } });
+  document.addEventListener("pointerleave", () => { shown = false; aura.classList.remove("on"); });
+  (function f(){ ax += (tx-ax)*.12; ay += (ty-ay)*.12; aura.style.transform = `translate3d(${ax}px,${ay}px,0)`; requestAnimationFrame(f); })();
+  document.addEventListener("pointermove", e => {
+    const t = e.target.closest && e.target.closest(".tilt");
+    if (t){
+      const r = t.getBoundingClientRect(), x = (e.clientX - r.left)/r.width, y = (e.clientY - r.top)/r.height;
+      t.style.setProperty("--ry", ((x-.5)*7).toFixed(2)+"deg"); t.style.setProperty("--rx", ((.5-y)*7).toFixed(2)+"deg");
+      t.style.setProperty("--mx", (x*100)+"%"); t.style.setProperty("--my", (y*100)+"%");
+    }
+    $$(".tilt").forEach(o => { if (o !== t && o.style.getPropertyValue("--rx")){ o.style.setProperty("--rx","0deg"); o.style.setProperty("--ry","0deg"); } });
+    const m = e.target.closest && e.target.closest("[data-mag]");
+    $$("[data-mag]").forEach(b => { if (b !== m){ b.style.setProperty("--tx","0px"); b.style.setProperty("--ty","0px"); } });
+    if (m){ const r = m.getBoundingClientRect(); m.style.setProperty("--tx", ((e.clientX-(r.left+r.width/2))*.18).toFixed(1)+"px"); m.style.setProperty("--ty", ((e.clientY-(r.top+r.height/2))*.28).toFixed(1)+"px"); }
+  });
+})();
+
+/* ================= text + scroll reveals (start once the intro closes) ================= */
+let startReveals;
+(function(){
+  function split(elm, mode){
+    let n = 0;
+    const walk = node => [...node.childNodes].forEach(c => {
+      if (c.nodeType === 3){
+        const frag = document.createDocumentFragment();
+        c.textContent.split(/(\s+)/).forEach(w => {
+          if (!w) return;
+          if (/^\s+$/.test(w)){ frag.appendChild(document.createTextNode(" ")); return; }
+          if (mode === "chars"){
+            const word = el("span","word"); word.setAttribute("aria-label", w);
+            [...w].forEach(ch => { const s = el("span","ch", esc(ch)); s.style.setProperty("--c", n++); s.setAttribute("aria-hidden","true"); word.appendChild(s); });
+            frag.appendChild(word);
+          } else {
+            const o = el("span","w"), i = el("span","wi", esc(w)); i.style.setProperty("--c", n++); o.appendChild(i); frag.appendChild(o);
+          }
+        });
+        c.replaceWith(frag);
+      } else if (c.nodeType === 1 && !c.classList.contains("word") && !c.classList.contains("w")) walk(c);
+    });
+    walk(elm); elm.classList.add(mode === "chars" ? "chars" : "words");
+  }
+  $$("[data-chars]").forEach(h => split(h,"chars"));
+  $$("[data-words]").forEach(h => split(h,"words"));
+
+  function countUp(card){
+    $$("[data-count]", card).forEach(s => {
+      const raw = s.dataset.count, v = parseFloat(raw), d = (raw.split(".")[1]||"").length;
+      if (reduce){ s.textContent = raw; return; }
+      const t0 = performance.now(), dur = 1500;
+      (function f(now){ const p = Math.min(1,(now-t0)/dur); s.textContent = (v*(1-Math.pow(1-p,3))).toFixed(d); if (p<1) requestAnimationFrame(f); })(t0);
+    });
+  }
+  function show(t){
+    t.classList.add("in");
+    if (t.classList.contains("stat")) countUp(t);
+    if (t.classList.contains("tilt")) setTimeout(() => t.classList.add("done"), 1500);
+    if (t.hasAttribute("data-live")) setTimeout(() => $$(".ch", t).forEach(c => c.classList.add("live")), 1800);
+  }
+  let started = false;
+  startReveals = () => {
+    if (started) return; started = true;
+    const targets = $$(".rv,.chars,.words");
+    if (reduce || !("IntersectionObserver" in window)){ targets.forEach(show); return; }
+    const io = new IntersectionObserver(es => es.forEach(e => { if (e.isIntersecting){ show(e.target); io.unobserve(e.target); } }), { threshold:.12, rootMargin:"0px 0px -6% 0px" });
+    targets.forEach(t => io.observe(t));
+    setTimeout(() => targets.forEach(t => { if (!t.classList.contains("in")) show(t); }), 9000);
+  };
+})();
+
+/* ================= animated intro sequence ================= */
+(function(){
+  const intro = $("#intro"), main = $("#i-main"), dots = $("#i-dots");
+  const back = $("#i-back"), next = $("#i-next"), skip = $("#i-skip");
+  let idx = 0, opener = null, countRaf = 0;
+  const progressFill = $("#i-progress-fill"), progressTrack = $(".i-progress");
+  INTRO.forEach((s,i) => { const b = el("button"); b.type="button"; b.setAttribute("aria-label",s.label+", statistic "+(i+1)+" of "+INTRO.length); b.addEventListener("click",()=>show(i)); dots.appendChild(b); });
+  const fmt = (v,d) => v.toFixed(d);
+  function show(i){
+    idx = i; const s = INTRO[i];
+    if (countRaf) cancelAnimationFrame(countRaf);
+    main.innerHTML = "";
+    const w = el("div","i-slide");
+    w.innerHTML = `<div class="i-lab">${ic(s.icon)}${esc(s.label)}</div>
+      <div class="i-fig"><span>0</span><small>${esc(s.suf)}</small></div>
+      <p class="i-copy">${esc(s.head)}</p><p class="i-more">${esc(s.more)}</p><p class="i-src">Source: ${esc(s.src)}</p>`;
+    main.appendChild(w);
+    const n = $(".i-fig span", w);
+    if (reduce) n.textContent = fmt(s.v, s.d);
+    else {
+      const t0 = performance.now(), dur = 1250;
+      const count = now => {
+        const p = Math.min(1,(now-t0)/dur), eased = 1-Math.pow(1-p,4);
+        n.textContent = fmt(s.v*eased, s.d);
+        if (p < 1) countRaf = requestAnimationFrame(count);
+        else { n.textContent = fmt(s.v,s.d); countRaf = 0; }
+      };
+      countRaf = requestAnimationFrame(count);
+    }
+    [...dots.children].forEach((b,j)=> j===i ? b.setAttribute("aria-current","true") : b.removeAttribute("aria-current"));
+    back.disabled = i===0;
+    next.textContent = i===INTRO.length-1 ? "Enter site" : "Next";
+    const pct = Math.round(((i+1)/INTRO.length)*100);
+    progressFill.style.width = pct+"%";
+    progressTrack.setAttribute("aria-valuenow",String(pct));
+  }
+  function open(){ opener = document.activeElement; intro.classList.add("on"); document.body.style.overflow = "hidden"; show(0); next.focus({preventScroll:true}); }
+  function close(){ if (countRaf) cancelAnimationFrame(countRaf); intro.classList.remove("on"); document.body.style.overflow = ""; if (opener && opener.focus && opener !== document.body) opener.focus({preventScroll:true}); startReveals(); }
+  next.addEventListener("click", () => idx < INTRO.length-1 ? show(idx+1) : close());
+  back.addEventListener("click", () => idx > 0 && show(idx-1));
+  skip.addEventListener("click", close);
+  document.addEventListener("keydown", e => {
+    if (!intro.classList.contains("on")) return;
+    if (e.key === "ArrowRight") { e.preventDefault(); next.click(); }
+    else if (e.key === "ArrowLeft") { e.preventDefault(); back.click(); }
+    else if (e.key === "Escape") { e.preventDefault(); close(); }
+    else if (e.key === "Tab") {
+      const f = [...intro.querySelectorAll("button:not(:disabled)")]; const first = f[0], last = f[f.length-1];
+      if (e.shiftKey && document.activeElement === first) { e.preventDefault(); last.focus(); }
+      else if (!e.shiftKey && document.activeElement === last) { e.preventDefault(); first.focus(); }
+    }
+  });
+  document.querySelectorAll("[data-replay]").forEach(b => b.addEventListener("click", () => { smoothTo(0); open(); }));
+  /* Three-beat launch sequence: Philippine context, global connection, then action. */
+  const loader = $("#page-loader"), loaderText = $("#loader-status-text");
+  const launchMessages = ["Starting in the Philippines", "Looking at local issues and global ideas", "Turning ideas into local action"];
+  const launchStages = loader ? $$(".loader-stages span", loader) : [];
+  let launchStep = 0;
+  const launchTimer = setInterval(() => {
+    if (!loader || !loader.isConnected) { clearInterval(launchTimer); return; }
+    launchStep = Math.min(launchStep + 1, launchMessages.length - 1);
+    if (loaderText){
+      loaderText.parentElement.classList.add("swap");
+      setTimeout(() => { loaderText.textContent = launchMessages[launchStep]; loaderText.parentElement.classList.remove("swap"); }, 180);
+    }
+    launchStages.forEach((stage,i) => stage.classList.toggle("active", i===launchStep));
+    $$(".loader-stages i", loader).forEach((line,i) => line.classList.toggle("done", i < launchStep));
+  }, 430);
+  /* Always replay the animated entry sequence on a full page load; the user can skip it. */
+  setTimeout(() => {
+    clearInterval(launchTimer);
+    if (loader) loader.classList.add("out");
+    setTimeout(() => { if (loader) loader.remove(); open(); }, 600);
+  }, 2100);
+})();
+</script>
